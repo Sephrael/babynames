@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vote for Baby's Name 🍼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #f2a0b8; --pink-pale: #fdf0f4; --pink-deep: #d9607e; --pink-bg: #fff5f8;
+    --blue: #8fc6ee; --blue-pale: #eef6fd; --blue-deep: #4d9ed6; --blue-bg: #f0f8ff;
+    --text: #2d2540; --muted: #8a7f96; --gold: #c9923a; --white: #ffffff;
+    --radius: 18px; --green: #2a9d5c;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Nunito', sans-serif; background: #fafafa; color: var(--text); min-height: 100vh; padding-bottom: 4rem; }
+
+  /* ── GATE ── */
+  .gate-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(160deg, var(--pink-pale) 0%, #fff 45%, var(--blue-pale) 100%);
+    z-index: 500; display: flex; align-items: center; justify-content: center; padding: 2rem;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .gate-overlay.hiding { opacity: 0; transform: scale(1.04); pointer-events: none; }
+  .gate-card {
+    background: white; border-radius: 28px; padding: 2.5rem 2rem; max-width: 380px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1); text-align: center;
+    animation: gate-in 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes gate-in { from { transform: scale(0.85) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  .gate-icon { font-size: 3rem; display: block; margin-bottom: 1rem; animation: bounce 2s ease-in-out infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .gate-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 900; color: var(--text); margin-bottom: 0.4rem; line-height: 1.2; }
+  .gate-title .pink { color: var(--pink-deep); }
+  .gate-title .blue { color: var(--blue-deep); }
+  .gate-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.5; }
+  .gate-fields { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.2rem; }
+  .gate-label { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; text-align: left; }
+  .gate-input {
+    width: 100%; border: 2px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 0.85rem 1.1rem;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text);
+    background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .gate-input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(242,160,184,0.2); background: white; }
+  .gate-input.error { border-color: #e05c5c; animation: shake 0.35s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .gate-error-msg { font-size: 0.8rem; color: #e05c5c; font-weight: 600; min-height: 1.1rem; text-align: left; }
+  .gate-btn {
+    width: 100%; border: none; border-radius: 14px; padding: 1rem;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer; color: white;
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    box-shadow: 0 4px 16px rgba(242,160,184,0.4); transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .gate-btn:hover { transform: translateY(-1px); }
+  .gate-btn:active { transform: scale(0.98); }
+  .gate-privacy { font-size: 0.75rem; color: var(--muted); margin-top: 1rem; line-height: 1.5; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, var(--pink-pale) 0%, var(--white) 50%, var(--blue-pale) 100%);
+    padding: 2rem 1.5rem 1.6rem; text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.06); position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '💕  🍼  ⭐  💙  ✨  💗  🌸  🐋';
+    position: absolute; top: 0; left: -100%; font-size: 1.2rem; opacity: 0.12;
+    white-space: nowrap; animation: hero-scroll 18s linear infinite; letter-spacing: 1.5rem;
+  }
+  @keyframes hero-scroll { to { left: 100%; } }
+  .hero-top { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .hero-icon { font-size: 2rem; animation: bounce 2s ease-in-out infinite; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; color: var(--text); line-height: 1.15; }
+  .hero h1 .pink { color: var(--pink-deep); }
+  .hero h1 .blue { color: var(--blue-deep); }
+  .hero-sub { font-size: 0.88rem; color: var(--muted); font-weight: 400; }
+  .voter-badge { display: none; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.08); border-radius: 50px; padding: 0.35rem 0.9rem 0.35rem 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--text); }
+  .voter-badge.visible { display: flex; }
+  .voter-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); }
+
+  /* ── TABS ── */
+  .tab-bar { display: flex; background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.07); position: sticky; top: 0; z-index: 50; padding: 0 1rem; }
+  .tab-btn { flex: 1; background: none; border: none; padding: 1rem 0.5rem; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--muted); cursor: pointer; position: relative; transition: color 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+  .tab-btn::after { content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 3px; border-radius: 3px 3px 0 0; opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scaleX(0.6); }
+  .tab-btn.active { color: var(--text); }
+  .tab-btn.active::after { opacity: 1; transform: scaleX(1); }
+  .tab-btn.tab-all.active::after { background: var(--gold); }
+  .tab-btn.tab-girl.active { color: var(--pink-deep); }
+  .tab-btn.tab-girl.active::after { background: var(--pink); }
+  .tab-btn.tab-boy.active { color: var(--blue-deep); }
+  .tab-btn.tab-boy.active::after { background: var(--blue); }
+
+  /* ── CONTENT ── */
+  .content { padding: 1.2rem 1rem 0; max-width: 480px; margin: 0 auto; }
+
+  /* ── SUGGEST FORM ── */
+  .suggest-card { background: var(--white); border-radius: var(--radius); padding: 1.4rem; margin-bottom: 1.2rem; box-shadow: 0 2px 16px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.05); }
+  .suggest-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; font-style: italic; margin-bottom: 1rem; color: var(--text); }
+  .gender-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .gender-btn { flex: 1; border: 2px solid transparent; border-radius: 50px; padding: 0.6rem 1rem; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+  .gender-btn.girl { background: var(--pink-pale); color: var(--pink-deep); border-color: var(--pink); }
+  .gender-btn.girl.selected { background: var(--pink); color: white; box-shadow: 0 4px 12px rgba(242,160,184,0.4); transform: scale(1.03); }
+  .gender-btn.boy { background: var(--blue-pale); color: var(--blue-deep); border-color: var(--blue); }
+  .gender-btn.boy.selected { background: var(--blue); color: white; box-shadow: 0 4px 12px rgba(143,198,238,0.4); transform: scale(1.03); }
+  .name-input-row { display: flex; gap: 0.5rem; }
+  .name-input { flex: 1; border: 2px solid rgba(0,0,0,0.1); border-radius: 50px; padding: 0.75rem 1.2rem; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  .name-input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(242,160,184,0.2); background: white; }
+  .name-input.boy-mode:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(143,198,238,0.2); }
+  .submit-btn { border: none; border-radius: 50px; padding: 0.75rem 1.4rem; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800; cursor: pointer; color: white; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); background: linear-gradient(135deg, var(--pink), var(--pink-deep)); white-space: nowrap; }
+  .submit-btn.boy-mode { background: linear-gradient(135deg, var(--blue), var(--blue-deep)); }
+  .submit-btn:active { transform: scale(0.95); }
+  .form-feedback { font-size: 0.85rem; margin-top: 0.6rem; min-height: 1.2rem; font-weight: 600; padding-left: 0.3rem; }
+  .form-feedback.error { color: #d44; }
+  .form-feedback.success { color: var(--green); }
+  .form-feedback.pending { color: var(--gold); }
+
+  /* ── SECTION HEADING ── */
+  .section-heading { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; font-style: italic; color: var(--text); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+  .count-badge { font-family: 'Nunito', sans-serif; font-style: normal; font-size: 0.75rem; font-weight: 700; background: rgba(0,0,0,0.08); border-radius: 50px; padding: 0.15rem 0.5rem; color: var(--muted); }
+
+  /* ── NAME CARDS ── */
+  .names-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.2rem; }
+  .name-item { background: var(--white); border-radius: var(--radius); padding: 0.9rem 1.1rem; display: flex; align-items: center; gap: 0.9rem; box-shadow: 0 1px 8px rgba(0,0,0,0.05); border: 2px solid transparent; cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); user-select: none; }
+  .name-item:active { transform: scale(0.98); }
+  .name-item.girl-item { border-color: rgba(242,160,184,0.2); }
+  .name-item.boy-item { border-color: rgba(143,198,238,0.2); }
+  .name-item.voted.girl-item { background: var(--pink-bg); border-color: var(--pink); box-shadow: 0 2px 12px rgba(242,160,184,0.25); }
+  .name-item.voted.boy-item { background: var(--blue-bg); border-color: var(--blue); box-shadow: 0 2px 12px rgba(143,198,238,0.25); }
+  .name-item.just-voted { animation: vote-pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes vote-pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+  .gender-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .girl-dot { background: var(--pink); }
+  .boy-dot { background: var(--blue); }
+  .item-name { flex: 1; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+  .item-meta { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .item-votes { font-size: 0.9rem; font-weight: 800; color: var(--muted); min-width: 2rem; text-align: right; }
+  .name-item.voted.girl-item .item-votes { color: var(--pink-deep); }
+  .name-item.voted.boy-item .item-votes { color: var(--blue-deep); }
+  .vote-check { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid rgba(0,0,0,0.1); transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); font-size: 0.9rem; color: transparent; background: transparent; }
+  .name-item.voted.girl-item .vote-check { background: var(--pink); border-color: var(--pink); color: white; box-shadow: 0 2px 8px rgba(242,160,184,0.4); transform: scale(1.1); }
+  .name-item.voted.boy-item .vote-check { background: var(--blue); border-color: var(--blue); color: white; box-shadow: 0 2px 8px rgba(143,198,238,0.4); transform: scale(1.1); }
+
+  /* ── EMPTY ── */
+  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); font-size: 0.95rem; }
+  .empty .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+
+  /* ── TABS HIDDEN ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div class="gate-overlay" id="gate-overlay">
+  <div class="gate-card">
+    <span class="gate-icon">🍼</span>
+    <h1 class="gate-title">Welcome to the<br><span class="pink">Baby</span> <span class="blue">Name</span> Vote!</h1>
+    <p class="gate-sub">Before you vote, let us know who you are so the parents can see your picks! 💕</p>
+    <div class="gate-fields">
+      <div>
+        <label class="gate-label">Your First Name</label>
+        <input class="gate-input" id="gate-first" type="text" placeholder="e.g. Priya" maxlength="30" autocomplete="given-name" />
+      </div>
+      <div>
+        <label class="gate-label">Last Initial</label>
+        <input class="gate-input" id="gate-last" type="text" placeholder="M" maxlength="1" autocomplete="off" style="text-align:center;text-transform:uppercase;font-size:1.2rem;max-width:80px" />
+      </div>
+      <div class="gate-error-msg" id="gate-error"></div>
+    </div>
+    <button class="gate-btn" onclick="submitGate()">Let's Vote! ✨</button>
+    <p class="gate-privacy">Your name is only visible to the parents — not on the public display.</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="hero">
+  <div class="hero-top">
+    <span class="hero-icon">🍼</span>
+    <h1>Vote for <span class="pink">Baby</span>'s <span class="blue">Name</span></h1>
+    <div class="voter-badge" id="voter-badge">
+      <div class="voter-badge-dot"></div>
+      <span id="voter-badge-name">You</span>
+    </div>
+  </div>
+  <p class="hero-sub">Suggest a name or vote for your favorites!</p>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn tab-all active" onclick="switchTab('all')">✨ All Names</button>
+  <button class="tab-btn tab-girl" onclick="switchTab('girl')">🎀 Girls</button>
+  <button class="tab-btn tab-boy" onclick="switchTab('boy')">🐋 Boys</button>
+</div>
+
+<div class="content">
+  <div class="suggest-card">
+    <div class="suggest-title"><span>✍️</span> Suggest a Name</div>
+    <div class="gender-toggle">
+      <button class="gender-btn girl selected" id="btn-girl" onclick="selectGender('girl')">🎀 Girl</button>
+      <button class="gender-btn boy" id="btn-boy" onclick="selectGender('boy')">🐋 Boy</button>
+    </div>
+    <div class="name-input-row">
+      <input class="name-input" id="name-input" type="text" placeholder="Enter a name..." maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button class="submit-btn" id="submit-btn" onclick="submitName()">Add ✨</button>
+    </div>
+    <div class="form-feedback" id="form-feedback"></div>
+  </div>
+
+  <div class="tab-content active" id="tab-all">
+    <div class="section-heading">🎀 Girl Names <span class="count-badge" id="girl-count-all">0</span></div>
+    <div class="names-list" id="girl-list-all"></div>
+    <div class="section-heading">🐋 Boy Names <span class="count-badge" id="boy-count-all">0</span></div>
+    <div class="names-list" id="boy-list-all"></div>
+  </div>
+  <div class="tab-content" id="tab-girl">
+    <div class="section-heading">🎀 Girl Names <span class="count-badge" id="girl-count-tab">0</span></div>
+    <div class="names-list" id="girl-list-tab"></div>
+  </div>
+  <div class="tab-content" id="tab-boy">
+    <div class="section-heading">🐋 Boy Names <span class="count-badge" id="boy-count-tab">0</span></div>
+    <div class="names-list" id="boy-list-tab"></div>
+  </div>
+</div>
+
+<script>
+// ─── Device ID ────────────────────────────────────────────────────────────────
+function getDeviceId() {
+  let id = localStorage.getItem('baby_device_id');
+  if (!id) { id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2); localStorage.setItem('baby_device_id', id); }
+  return id;
+}
+const DEVICE_ID = getDeviceId();
+
+// ─── Voter Identity ───────────────────────────────────────────────────────────
+let VOTER_NAME = localStorage.getItem('baby_voter_name') || null;
+
+function submitGate() {
+  const first = document.getElementById('gate-first').value.trim();
+  const last  = document.getElementById('gate-last').value.trim().toUpperCase();
+  const errEl = document.getElementById('gate-error');
+  if (!first) { markErr('gate-first', errEl, 'Please enter your first name.'); return; }
+  if (!last || !/^[A-Za-z]$/.test(last)) { markErr('gate-last', errEl, 'Please enter your last initial (one letter).'); return; }
+  VOTER_NAME = `${first} ${last}.`;
+  localStorage.setItem('baby_voter_name', VOTER_NAME);
+  dismissGate();
+}
+
+function markErr(inputId, errEl, msg) {
+  const el = document.getElementById(inputId);
+  el.classList.add('error');
+  errEl.textContent = msg;
+  setTimeout(() => el.classList.remove('error'), 600);
+}
+
+function dismissGate() {
+  const overlay = document.getElementById('gate-overlay');
+  overlay.classList.add('hiding');
+  setTimeout(() => { overlay.style.display = 'none'; }, 400);
+  document.getElementById('voter-badge-name').textContent = VOTER_NAME;
+  document.getElementById('voter-badge').classList.add('visible');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['gate-first','gate-last'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+  });
+  const lastEl = document.getElementById('gate-last');
+  if (lastEl) lastEl.addEventListener('input', () => { lastEl.value = lastEl.value.toUpperCase(); });
+  if (VOTER_NAME) dismissGate();
+});
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let allNames = [], myVotes = new Set(), selectedGender = 'girl', submitting = false;
+
+// ─── Gender toggle ────────────────────────────────────────────────────────────
+function selectGender(g) {
+  selectedGender = g;
+  document.getElementById('btn-girl').classList.toggle('selected', g === 'girl');
+  document.getElementById('btn-boy').classList.toggle('selected', g === 'boy');
+  document.getElementById('name-input').classList.toggle('boy-mode', g === 'boy');
+  document.getElementById('submit-btn').classList.toggle('boy-mode', g === 'boy');
+  document.getElementById('name-input').focus();
+}
+
+// ─── Tab switching ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  document.querySelector(`.tab-${tab}`).classList.add('active');
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderNames() {
+  const girls = allNames.filter(n => n.gender === 'girl').sort((a,b) => b.votes - a.votes);
+  const boys  = allNames.filter(n => n.gender === 'boy' ).sort((a,b) => b.votes - a.votes);
+  renderList('girl-list-all', girls, 'girl');
+  renderList('boy-list-all',  boys,  'boy');
+  renderList('girl-list-tab', girls, 'girl');
+  renderList('boy-list-tab',  boys,  'boy');
+  document.getElementById('girl-count-all').textContent = girls.length;
+  document.getElementById('boy-count-all').textContent  = boys.length;
+  document.getElementById('girl-count-tab').textContent = girls.length;
+  document.getElementById('boy-count-tab').textContent  = boys.length;
+}
+
+function renderList(id, names, gender) {
+  const el = document.getElementById(id);
+  if (!names.length) {
+    el.innerHTML = `<div class="empty"><span class="empty-icon">${gender==='girl'?'🎀':'🐋'}</span>No names yet — suggest one above!</div>`;
+    return;
+  }
+  el.innerHTML = names.map(name => {
+    const voted = myVotes.has(name._id);
+    return `<div class="name-item ${gender}-item ${voted?'voted':''}" id="ni-${name._id}" onclick="toggleVote('${name._id}','${gender}','${name.name.replace(/'/g,"\\'")}')">
+      <div class="gender-dot ${gender}-dot"></div>
+      <div class="item-name">${name.name}</div>
+      <div class="item-meta">
+        <div class="item-votes">${name.votes} ${name.votes===1?'vote':'votes'}</div>
+        <div class="vote-check">✓</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Vote ─────────────────────────────────────────────────────────────────────
+async function toggleVote(nameId, gender, nameName) {
+  const isVoted = myVotes.has(nameId);
+  const cards = document.querySelectorAll(`#ni-${nameId}`);
+
+  // Optimistic
+  cards.forEach(c => { c.classList.toggle('voted', !isVoted); c.classList.add('just-voted'); setTimeout(() => c.classList.remove('just-voted'), 350); });
+  isVoted ? myVotes.delete(nameId) : myVotes.add(nameId);
+
+  try {
+    const res = await fetch('/api/vote', {
+      method: isVoted ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nameId, deviceId: DEVICE_ID, voterName: VOTER_NAME })
+    });
+    if (!res.ok) {
+      // Revert
+      isVoted ? myVotes.add(nameId) : myVotes.delete(nameId);
+      cards.forEach(c => c.classList.toggle('voted', isVoted));
+    } else {
+      const data = await res.json();
+      const name = allNames.find(n => n._id === nameId);
+      if (name) { name.votes = data.votes; renderNames(); }
+    }
+  } catch {
+    isVoted ? myVotes.add(nameId) : myVotes.delete(nameId);
+    cards.forEach(c => c.classList.toggle('voted', isVoted));
+  }
+}
+
+// ─── Submit name ──────────────────────────────────────────────────────────────
+async function submitName() {
+  if (submitting) return;
+  const input = document.getElementById('name-input');
+  const name = input.value.trim();
+  if (!name) { setFeedback('error', 'Please enter a name!'); input.focus(); return; }
+
+  submitting = true;
+  document.getElementById('submit-btn').textContent = '...';
+  setFeedback('', '');
+
+  try {
+    const res = await fetch('/api/names', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, gender: selectedGender })
+    });
+    const data = await res.json();
+
+    if (res.status === 202 && data.pending) {
+      // Moderation on — name is awaiting approval
+      setFeedback('pending', `⏳ "${name}" is awaiting approval by the host!`);
+      input.value = '';
+      setTimeout(() => setFeedback('', ''), 5000);
+    } else if (res.status === 409) {
+      setFeedback('error', 'That name is already on the list!');
+      if (data.id && !myVotes.has(data.id)) toggleVote(data.id, selectedGender, name);
+    } else if (!res.ok) {
+      setFeedback('error', data.error || 'Something went wrong');
+    } else {
+      // Name added and approved — auto-vote for it
+      setFeedback('success', `✨ "${name}" added!`);
+      input.value = '';
+      allNames.push(data);
+      myVotes.add(data._id);
+      await fetch('/api/vote', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nameId: data._id, deviceId: DEVICE_ID, voterName: VOTER_NAME })
+      });
+      data.votes = 1;
+      renderNames();
+      setTimeout(() => setFeedback('', ''), 3000);
+    }
+  } catch { setFeedback('error', 'Network error — please try again'); }
+  finally {
+    submitting = false;
+    document.getElementById('submit-btn').textContent = 'Add ✨';
+  }
+}
+
+function setFeedback(type, msg) {
+  const el = document.getElementById('form-feedback');
+  el.className = 'form-feedback ' + type;
+  el.textContent = msg;
+}
+
+document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
+
+// ─── Load data ────────────────────────────────────────────────────────────────
+async function loadData() {
+  const [namesRes, votesRes] = await Promise.all([fetch('/api/names'), fetch(`/api/votes/${DEVICE_ID}`)]);
+  allNames = await namesRes.json();
+  myVotes = new Set(await votesRes.json());
+  renderNames();
+}
+
+// ─── SSE ──────────────────────────────────────────────────────────────────────
+function connectSSE() {
+  const es = new EventSource('/api/events');
+  es.addEventListener('update', async () => { allNames = await (await fetch('/api/names')).json(); renderNames(); });
+  es.onerror = () => { es.close(); setTimeout(connectSSE, 4000); };
+}
+
+loadData();
+connectSSE();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Database & persistent data — never commit these
+data/
+*.db
+
+# Environment secrets — never commit
+.env
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

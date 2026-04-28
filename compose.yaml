@@ -1,0 +1,26 @@
+name: babynames
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Or use a pre-built image if you push to GHCR:
+    # image: ghcr.io/vijaymanne/babynames:latest
+    container_name: babynames
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - BASE_URL=${BASE_URL:-http://localhost:3000}
+      - ADMIN_SECRET=${ADMIN_SECRET:-babyshower2025}
+    volumes:
+      # Persist the database files on the TrueNAS host
+      - ${DATA_PATH:-./data}:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/settings"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
