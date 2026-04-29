@@ -1,14 +1,15 @@
-require('dotenv').config(); // Load .env file before anything else
-const express = require('express');
-const path = require('path');
-const QRCode = require('qrcode');
-const Datastore = require('nedb-promises');
-const fs = require('fs');
+require('dotenv').config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'babyshower2025';
+const express  = require('express');
+const path     = require('path');
+const QRCode   = require('qrcode');
+const Datastore = require('nedb-promises');
+const fs       = require('fs');
+
+const app          = express();
+const PORT         = process.env.PORT         || 3000;
+const BASE_URL     = process.env.BASE_URL     || 'https://baby.yourdomain.com';
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'babyshower2026';
 
 // ─── Databases ────────────────────────────────────────────────────────────────
 if (!fs.existsSync('./data')) fs.mkdirSync('./data');
@@ -20,12 +21,28 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Settings helpers ─────────────────────────────────────────────────────────
+const DEFAULT_SETTINGS = {
+  _id: 'settings',
+  moderationEnabled: false,
+  leaderboardCount:  5,
+  // Ticker settings
+  tickerCount:    20,       // how many recent votes to show in the ticker
+  tickerTemplate: '{gender_emoji} {voter} → {name}',  // display template
+  tickerSpeed:    'normal', // 'slow' | 'normal' | 'fast'
+};
+
 async function getSettings() {
   let s = await settingsDb.findOne({ _id: 'settings' });
   if (!s) {
-    s = { _id: 'settings', moderationEnabled: false, leaderboardCount: 5 };
+    s = { ...DEFAULT_SETTINGS };
     await settingsDb.insert(s);
   }
+  // Back-fill any missing keys added in later versions
+  let dirty = false;
+  for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
+    if (s[k] === undefined) { s[k] = v; dirty = true; }
+  }
+  if (dirty) await settingsDb.update({ _id: 'settings' }, { $set: s });
   return s;
 }
 
@@ -34,9 +51,8 @@ async function saveSettings(patch) {
   return getSettings();
 }
 
-// ─── SSE: Live updates ────────────────────────────────────────────────────────
+// ─── SSE ──────────────────────────────────────────────────────────────────────
 const clients = new Set();
-
 app.get('/api/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -54,134 +70,120 @@ function broadcast(event, data) {
   clients.forEach(c => { try { c.write(msg); } catch { clients.delete(c); } });
 }
 
-// ─── API: Public settings (safe subset) ──────────────────────────────────────
+// ─── Public: settings ─────────────────────────────────────────────────────────
 app.get('/api/settings', async (req, res) => {
   const s = await getSettings();
-  res.json({ leaderboardCount: s.leaderboardCount, moderationEnabled: s.moderationEnabled });
+  res.json({
+    leaderboardCount: s.leaderboardCount,
+    moderationEnabled: s.moderationEnabled,
+    tickerCount:    s.tickerCount,
+    tickerTemplate: s.tickerTemplate,
+    tickerSpeed:    s.tickerSpeed,
+  });
 });
 
-// ─── API: Get approved names (public) ────────────────────────────────────────
+// ─── Public: approved names ───────────────────────────────────────────────────
 app.get('/api/names', async (req, res) => {
   try {
-    // Always return only approved names to the public
-    const names = await namesDb.find({ approved: true }).sort({ votes: -1 });
-    res.json(names);
+    res.json(await namesDb.find({ approved: true }).sort({ votes: -1 }));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ─── API: Submit a new name ───────────────────────────────────────────────────
+// ─── Public: recent votes for ticker ─────────────────────────────────────────
+app.get('/api/recent-votes', async (req, res) => {
+  try {
+    const s     = await getSettings();
+    const limit = Math.min(parseInt(req.query.limit) || s.tickerCount, 50);
+    const votes = await votesDb.find({}).sort({ votedAt: -1 });
+    res.json(votes.slice(0, limit).map(v => ({
+      voterName:  v.voterName  || 'A Guest',
+      nameName:   v.nameName,
+      nameGender: v.nameGender,
+      votedAt:    v.votedAt,
+    })));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── Public: submit name ──────────────────────────────────────────────────────
 app.post('/api/names', async (req, res) => {
   const { name, gender } = req.body;
-  if (!name || !gender || !['boy', 'girl'].includes(gender)) {
+  if (!name || !gender || !['boy', 'girl'].includes(gender))
     return res.status(400).json({ error: 'Name and gender (boy/girl) required' });
-  }
   const trimmed = name.trim();
-  if (trimmed.length < 1 || trimmed.length > 40) {
+  if (trimmed.length < 1 || trimmed.length > 40)
     return res.status(400).json({ error: 'Name must be 1–40 characters' });
-  }
-
-  // Check duplicate across all names (approved or not)
   const existing = await namesDb.findOne({ nameLower: trimmed.toLowerCase(), gender });
   if (existing) {
-    // If it exists but is pending, tell the user
-    if (!existing.approved) {
+    if (!existing.approved)
       return res.status(202).json({ pending: true, id: existing._id, message: 'Name is awaiting approval' });
-    }
     return res.status(409).json({ error: 'Name already exists', id: existing._id });
   }
-
   const settings = await getSettings();
-  const approved = !settings.moderationEnabled; // auto-approve when moderation is off
-
-  const doc = await namesDb.insert({
-    name: trimmed,
-    nameLower: trimmed.toLowerCase(),
-    gender,
-    votes: 0,
-    approved,
-    createdAt: new Date()
-  });
-
+  const approved = !settings.moderationEnabled;
+  const doc = await namesDb.insert({ name: trimmed, nameLower: trimmed.toLowerCase(), gender, votes: 0, approved, createdAt: new Date() });
   if (approved) broadcast('update', { ts: Date.now() });
-  else broadcast('pending', { ts: Date.now() }); // signals admin panel to refresh
-
+  else          broadcast('pending', { ts: Date.now() });
   res.status(approved ? 200 : 202).json({ ...doc, pending: !approved });
 });
 
-// ─── API: Vote for a name ─────────────────────────────────────────────────────
+// ─── Public: vote ─────────────────────────────────────────────────────────────
 app.post('/api/vote', async (req, res) => {
   const { nameId, deviceId, voterName } = req.body;
   if (!nameId || !deviceId) return res.status(400).json({ error: 'nameId and deviceId required' });
-
   const nameDoc = await namesDb.findOne({ _id: nameId, approved: true });
   if (!nameDoc) return res.status(404).json({ error: 'Name not found or not approved' });
-
-  if (await votesDb.findOne({ nameId, deviceId })) {
+  if (await votesDb.findOne({ nameId, deviceId }))
     return res.status(409).json({ error: 'Already voted for this name' });
-  }
-
   await votesDb.insert({ nameId, nameName: nameDoc.name, nameGender: nameDoc.gender, deviceId, voterName: voterName || null, votedAt: new Date() });
   await namesDb.update({ _id: nameId }, { $inc: { votes: 1 } });
   const updated = await namesDb.findOne({ _id: nameId });
-
   broadcast('update', { ts: Date.now() });
   res.json({ success: true, votes: updated.votes });
 });
 
-// ─── API: Unvote ──────────────────────────────────────────────────────────────
+// ─── Public: unvote ───────────────────────────────────────────────────────────
 app.delete('/api/vote', async (req, res) => {
   const { nameId, deviceId } = req.body;
   if (!nameId || !deviceId) return res.status(400).json({ error: 'nameId and deviceId required' });
-
-  if (!await votesDb.findOne({ nameId, deviceId })) return res.status(404).json({ error: 'Vote not found' });
-
+  if (!await votesDb.findOne({ nameId, deviceId }))
+    return res.status(404).json({ error: 'Vote not found' });
   await votesDb.remove({ nameId, deviceId });
   await namesDb.update({ _id: nameId }, { $inc: { votes: -1 } });
   const updated = await namesDb.findOne({ _id: nameId });
-
   broadcast('update', { ts: Date.now() });
   res.json({ success: true, votes: Math.max(0, updated.votes) });
 });
 
-// ─── API: Get voted name IDs for a device ────────────────────────────────────
+// ─── Public: votes by device ──────────────────────────────────────────────────
 app.get('/api/votes/:deviceId', async (req, res) => {
   const votes = await votesDb.find({ deviceId: req.params.deviceId });
   res.json(votes.map(v => v.nameId));
 });
 
-// ─── API: QR code ─────────────────────────────────────────────────────────────
+// ─── Public: QR code ──────────────────────────────────────────────────────────
 app.get('/api/qr', async (req, res) => {
   try {
     const url = `${BASE_URL}/vote`;
-    const qr = await QRCode.toDataURL(url, { width: 400, margin: 2, color: { dark: '#4a4a6a', light: '#ffffff00' } });
+    const qr  = await QRCode.toDataURL(url, { width: 400, margin: 2, color: { dark: '#4a4a6a', light: '#ffffff00' } });
     res.json({ qr, url });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // ADMIN APIs
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 
-// ─── ADMIN: Get all votes ─────────────────────────────────────────────────────
-app.get(`/api/admin/${ADMIN_SECRET}/votes`, async (req, res) => {
-  res.json(await votesDb.find({}).sort({ votedAt: -1 }));
-});
+app.get(`/api/admin/${ADMIN_SECRET}/votes`,   async (req, res) => res.json(await votesDb.find({}).sort({ votedAt: -1 })));
+app.get(`/api/admin/${ADMIN_SECRET}/names`,   async (req, res) => res.json(await namesDb.find({}).sort({ createdAt: -1 })));
+app.get(`/api/admin/${ADMIN_SECRET}/pending`, async (req, res) => res.json(await namesDb.find({ approved: false }).sort({ createdAt: -1 })));
+app.get(`/api/admin/${ADMIN_SECRET}/settings`,async (req, res) => res.json(await getSettings()));
 
-// ─── ADMIN: Get ALL names (including pending) ─────────────────────────────────
-app.get(`/api/admin/${ADMIN_SECRET}/names`, async (req, res) => {
-  res.json(await namesDb.find({}).sort({ createdAt: -1 }));
-});
-
-// ─── ADMIN: Get pending names only ───────────────────────────────────────────
-app.get(`/api/admin/${ADMIN_SECRET}/pending`, async (req, res) => {
-  res.json(await namesDb.find({ approved: false }).sort({ createdAt: -1 }));
-});
-
-// ─── ADMIN: Approve a name ────────────────────────────────────────────────────
 app.post(`/api/admin/${ADMIN_SECRET}/names/:id/approve`, async (req, res) => {
   const doc = await namesDb.findOne({ _id: req.params.id });
   if (!doc) return res.status(404).json({ error: 'Name not found' });
@@ -190,7 +192,6 @@ app.post(`/api/admin/${ADMIN_SECRET}/names/:id/approve`, async (req, res) => {
   res.json({ success: true });
 });
 
-// ─── ADMIN: Reject (delete) a pending name ───────────────────────────────────
 app.delete(`/api/admin/${ADMIN_SECRET}/names/:id`, async (req, res) => {
   await namesDb.remove({ _id: req.params.id });
   await votesDb.remove({ nameId: req.params.id }, { multi: true });
@@ -198,23 +199,25 @@ app.delete(`/api/admin/${ADMIN_SECRET}/names/:id`, async (req, res) => {
   res.json({ success: true });
 });
 
-// ─── ADMIN: Get settings ──────────────────────────────────────────────────────
-app.get(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
-  res.json(await getSettings());
-});
-
-// ─── ADMIN: Update settings ───────────────────────────────────────────────────
 app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
-  const { moderationEnabled, leaderboardCount } = req.body;
+  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplate, tickerSpeed } = req.body;
   const patch = {};
   if (typeof moderationEnabled === 'boolean') patch.moderationEnabled = moderationEnabled;
-  if (typeof leaderboardCount === 'number' && leaderboardCount >= 1 && leaderboardCount <= 10) patch.leaderboardCount = leaderboardCount;
+  if (typeof leaderboardCount  === 'number' && leaderboardCount  >= 1  && leaderboardCount  <= 10) patch.leaderboardCount  = leaderboardCount;
+  if (typeof tickerCount       === 'number' && tickerCount       >= 5  && tickerCount       <= 50) patch.tickerCount       = tickerCount;
+  if (typeof tickerTemplate    === 'string' && tickerTemplate.length   <= 200)                     patch.tickerTemplate    = tickerTemplate.trim();
+  if (['slow','normal','fast'].includes(tickerSpeed))                                               patch.tickerSpeed       = tickerSpeed;
   const updated = await saveSettings(patch);
-  broadcast('settings', { leaderboardCount: updated.leaderboardCount, moderationEnabled: updated.moderationEnabled });
+  broadcast('settings', {
+    leaderboardCount: updated.leaderboardCount,
+    moderationEnabled: updated.moderationEnabled,
+    tickerCount:    updated.tickerCount,
+    tickerTemplate: updated.tickerTemplate,
+    tickerSpeed:    updated.tickerSpeed,
+  });
   res.json(updated);
 });
 
-// ─── ADMIN: Reset everything ──────────────────────────────────────────────────
 app.post(`/api/admin/${ADMIN_SECRET}/reset`, async (req, res) => {
   await namesDb.remove({}, { multi: true });
   await votesDb.remove({}, { multi: true });
@@ -222,7 +225,6 @@ app.post(`/api/admin/${ADMIN_SECRET}/reset`, async (req, res) => {
   res.json({ success: true });
 });
 
-// ─── ADMIN: Export CSV ────────────────────────────────────────────────────────
 app.get(`/api/admin/${ADMIN_SECRET}/export`, async (req, res) => {
   const votes = await votesDb.find({}).sort({ votedAt: 1 });
   let csv = 'Voter Name,Baby Name,Gender,Device ID,Voted At\n';
@@ -235,9 +237,9 @@ app.get(`/api/admin/${ADMIN_SECRET}/export`, async (req, res) => {
 });
 
 // ─── Page routes ──────────────────────────────────────────────────────────────
-app.get('/',                         (req, res) => res.sendFile(path.join(__dirname, 'public', 'display.html')));
-app.get('/vote',                     (req, res) => res.sendFile(path.join(__dirname, 'public', 'vote.html')));
-app.get(`/admin-${ADMIN_SECRET}`,    (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/',                      (req, res) => res.sendFile(path.join(__dirname, 'public', 'display.html')));
+app.get('/vote',                  (req, res) => res.sendFile(path.join(__dirname, 'public', 'vote.html')));
+app.get(`/admin-${ADMIN_SECRET}`, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🍼 Baby Name Leaderboard running!`);

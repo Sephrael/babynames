@@ -2,25 +2,33 @@ name: babynames
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # Or use a pre-built image if you push to GHCR:
-    # image: ghcr.io/vijaymanne/babynames:latest
+    image: ghcr.io/YOUR_GITHUB_USERNAME/babynames:latest
     container_name: babynames
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+
+    # Port is intentionally not exposed to the host.
+    # Traffic is routed via nginx proxy manager on the shared tunnel_net network.
+    # Uncomment below only for local testing without a proxy:
+    # ports:
+    #   - "3000:3000"
+
     environment:
-      - PORT=3000
-      - BASE_URL=${BASE_URL:-http://localhost:3000}
-      - ADMIN_SECRET=${ADMIN_SECRET:-babyshower2025}
+      - BASE_URL=${BASE_URL}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+
     volumes:
-      # Persist the database files on the TrueNAS host
       - ${DATA_PATH:-./data}:/app/data
+
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/settings"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/settings', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
+
+    networks:
+      - tunnel_net
+
+networks:
+  tunnel_net:
+    external: true

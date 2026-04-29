@@ -8,386 +8,144 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --pink:       #f9b8c8;
-    --pink-deep:  #e8849a;
-    --pink-pale:  #fde8ee;
-    --pink-mid:   #f4a0b8;
-    --blue:       #a8d4f5;
-    --blue-deep:  #6aaee0;
-    --blue-pale:  #ddf0ff;
-    --blue-mid:   #8ec4ef;
-    --neutral:    #faf8f5;
-    --neutral-border: rgba(212,168,83,0.18);
-    --gold:       #d4a853;
-    --text-dark:  #3a3250;
-    --name-font:  clamp(1.35rem, 2.2vw, 1.85rem);
-    --count-font: clamp(1.6rem, 2.6vw, 2.2rem);
-    --card-pad-v: 1rem;
-    --card-gap:   0.85rem;
+    --pink: #f9b8c8; --pink-deep: #e8849a; --pink-pale: #fde8ee; --pink-mid: #f4a0b8;
+    --blue: #a8d4f5; --blue-deep: #6aaee0; --blue-pale: #ddf0ff; --blue-mid: #8ec4ef;
+    --neutral: #faf8f5; --neutral-border: rgba(212,168,83,0.18);
+    --gold: #d4a853; --text-dark: #3a3250;
+    --name-font: clamp(1.35rem,2.2vw,1.85rem);
+    --count-font: clamp(1.6rem,2.6vw,2.2rem);
+    --card-pad-v: 1rem; --card-gap: 0.85rem;
+    --ticker-duration: 32s;
   }
+  html, body { width:100%; height:100%; background:var(--neutral); font-family:'DM Sans',sans-serif; }
+  @media (min-width:900px) { body { overflow:hidden; } }
+  #particles, #confetti-canvas { position:fixed; inset:0; z-index:1; pointer-events:none; }
+  #confetti-canvas { z-index:100; }
 
-  html, body { width: 100%; height: 100%; background: var(--neutral); font-family: 'DM Sans', sans-serif; }
+  .page { position:relative; z-index:5; display:grid; grid-template-rows:auto 1fr auto; min-height:100vh; }
+  @media (min-width:900px) { .page { height:100vh; } }
 
-  @media (min-width: 900px) { body { overflow: hidden; } }
-
-  #particles       { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-  #confetti-canvas { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
-
-  /* ═══ PAGE SHELL ═══ */
-  .page {
-    position: relative; z-index: 5;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    min-height: 100vh;
-  }
-  @media (min-width: 900px) { .page { height: 100vh; } }
-
-  /* ═══ HEADER BAND ═══ */
+  /* ── HEADER ── */
   .header-band {
-    background: var(--neutral);
-    border-bottom: 1.5px solid var(--neutral-border);
-    box-shadow: 0 2px 24px rgba(212,168,83,0.07);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding: 1.2rem clamp(1.2rem, 3vw, 2.5rem) 1rem;
-    gap: 1.5rem;
+    background:var(--neutral); border-bottom:1.5px solid var(--neutral-border);
+    box-shadow:0 2px 24px rgba(212,168,83,0.07);
+    text-align:center; position:relative;
+    padding:1.4rem clamp(1.2rem,12vw,10rem) 1.1rem;
   }
-
-  /* Mobile: stack header vertically */
-  @media (max-width: 700px) {
-    .header-band {
-      grid-template-columns: 1fr;
-      text-align: center;
-      gap: 1rem;
-      padding: 1.2rem 1rem 1rem;
-    }
-    .header-qr { justify-self: center; }
+  @media (min-width:900px) {
+    .header-band::before { content:'✦'; position:absolute; left:2rem; top:50%; transform:translateY(-50%); font-size:1rem; color:var(--gold); opacity:0.45; }
   }
+  .header-eyebrow { font-size:0.68rem; font-weight:400; letter-spacing:0.38em; text-transform:uppercase; color:var(--text-dark); opacity:0.38; margin-bottom:0.3rem; }
+  .header-title { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,5vw,4.6rem); font-weight:900; color:var(--text-dark); line-height:1.05; letter-spacing:-0.02em; }
+  .header-title .accent-pink { color:var(--pink-deep); }
+  .header-title .accent-blue { color:var(--blue-deep); }
+  .header-sub { font-family:'Cormorant Garamond',serif; font-size:clamp(0.85rem,1.4vw,1.2rem); font-weight:300; font-style:italic; color:var(--text-dark); opacity:0.38; margin-top:0.2rem; }
 
-  .header-text { }
+  .header-qr { position:absolute; right:clamp(0.8rem,2vw,1.8rem); top:50%; transform:translateY(-50%); display:block; text-decoration:none; }
+  .qr-image { width:clamp(72px,8.5vw,115px); height:clamp(72px,8.5vw,115px); border-radius:10px; background:white; padding:5px; border:1.5px solid var(--neutral-border); box-shadow:0 3px 16px rgba(0,0,0,0.07); display:block; transition:transform 0.2s,box-shadow 0.2s; }
+  .header-qr:hover .qr-image { transform:scale(1.06); box-shadow:0 6px 24px rgba(212,168,83,0.18); }
+  @media (max-width:480px) { .header-qr { display:none; } }
 
-  .header-eyebrow {
-    font-size: 0.7rem; font-weight: 400;
-    letter-spacing: 0.35em; text-transform: uppercase;
-    color: var(--text-dark); opacity: 0.4; margin-bottom: 0.3rem;
-  }
+  /* ── MIDDLE ── */
+  .middle { display:grid; grid-template-columns:1fr 1fr; position:relative; overflow:hidden; min-height:0; }
+  @media (max-width:600px) { .middle { grid-template-columns:1fr; } }
+  .half-girl { background:var(--pink-pale); display:flex; flex-direction:column; min-height:0; }
+  .half-boy  { background:var(--blue-pale); display:flex; flex-direction:column; min-height:0; }
 
-  .header-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.8rem, 5vw, 4.6rem);
-    font-weight: 900; color: var(--text-dark);
-    line-height: 1.05; letter-spacing: -0.02em;
-  }
+  .middle-divider { position:absolute; left:50%; top:0; bottom:0; width:3px; transform:translateX(-50%); background:linear-gradient(to bottom,transparent 0%,var(--gold) 8%,var(--gold) 92%,transparent 100%); z-index:10; pointer-events:none; }
+  .middle-divider::before, .middle-divider::after { content:'◆'; position:absolute; left:50%; transform:translateX(-50%); color:var(--gold); font-size:0.85rem; line-height:1; }
+  .middle-divider::before { top:5%; } .middle-divider::after { bottom:5%; }
+  @media (max-width:600px) { .middle-divider { display:none; } }
 
-  /* ALL of "Baby's" is pink */
-  .header-title .accent-pink { color: var(--pink-deep); }
-  .header-title .accent-blue { color: var(--blue-deep); }
+  .col-header { display:flex; align-items:center; padding:0.8rem 1.2rem 0.5rem; flex-shrink:0; gap:0.6rem; }
+  .half-girl .col-header { justify-content:flex-start; }
+  .half-boy  .col-header { justify-content:flex-end; }
+  .col-label-icon { font-size:clamp(1rem,1.7vw,1.5rem); flex-shrink:0; }
+  .col-label-text { font-family:'Playfair Display',serif; font-size:clamp(1rem,2.1vw,1.9rem); font-weight:700; font-style:italic; white-space:nowrap; }
+  .half-girl .col-label-text { color:var(--pink-deep); }
+  .half-boy  .col-label-text { color:var(--blue-deep); }
 
-  .header-sub {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(0.85rem, 1.4vw, 1.2rem);
-    font-weight: 300; font-style: italic;
-    color: var(--text-dark); opacity: 0.4; margin-top: 0.2rem;
-  }
+  .col-vote-total { display:flex; flex-direction:column; align-items:center; gap:0.05rem; flex-shrink:0; }
+  .col-vote-total .total-num { font-family:'Playfair Display',serif; font-size:clamp(1.2rem,2vw,1.8rem); font-weight:700; line-height:1; }
+  .col-vote-total .total-label { font-size:clamp(0.48rem,0.6vw,0.58rem); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; opacity:0.42; color:var(--text-dark); font-family:'DM Sans',sans-serif; }
+  .half-girl .col-vote-total { margin-left:auto; color:var(--pink-deep); }
+  .half-boy  .col-vote-total { margin-right:auto; color:var(--blue-deep); order:-1; }
 
-  /* QR code in header — clickable */
-  .header-qr {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    flex-shrink: 0;
-  }
-
-  .qr-image {
-    width: clamp(80px, 9vw, 120px);
-    height: clamp(80px, 9vw, 120px);
-    border-radius: 12px;
-    background: white;
-    padding: 6px;
-    border: 2px solid var(--neutral-border);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: block;
-  }
-
-  .header-qr:hover .qr-image {
-    transform: scale(1.05);
-    box-shadow: 0 8px 28px rgba(212,168,83,0.2);
-  }
-
-  /* ═══ MIDDLE: pink/blue split ═══ */
-  .middle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    position: relative;
-    overflow: hidden;
-    min-height: 0;
-  }
-
-  @media (max-width: 600px) { .middle { grid-template-columns: 1fr; } }
-
-  .half-girl { background: var(--pink-pale); display: flex; flex-direction: column; min-height: 0; }
-  .half-boy  { background: var(--blue-pale); display: flex; flex-direction: column; min-height: 0; }
-
-  /* Gold center divider */
-  .middle-divider {
-    position: absolute; left: 50%; top: 0; bottom: 0;
-    width: 3px; transform: translateX(-50%);
-    background: linear-gradient(to bottom, transparent 0%, var(--gold) 8%, var(--gold) 92%, transparent 100%);
-    z-index: 10; pointer-events: none;
-  }
-  .middle-divider::before, .middle-divider::after {
-    content: '◆'; position: absolute; left: 50%; transform: translateX(-50%);
-    color: var(--gold); font-size: 0.9rem; line-height: 1;
-  }
-  .middle-divider::before { top: 6%; }
-  .middle-divider::after  { bottom: 6%; }
-  @media (max-width: 600px) { .middle-divider { display: none; } }
-
-  /* ── Column label row — holds title + vote count ── */
-  .col-header {
-    display: flex;
-    align-items: center;
-    padding: 0.8rem 1.5rem 0.5rem;
-    flex-shrink: 0;
-    position: relative;
-  }
-
-  /* Girl: icon + title on left, vote count pushed to right (near divider) */
-  .half-girl .col-header {
-    justify-content: flex-start;
-    gap: 0.6rem;
-  }
-
-  /* Boy: vote count on left (near divider), then title + icon on right */
-  .half-boy .col-header {
-    justify-content: flex-end;
-    gap: 0.6rem;
-  }
-
-  .col-label-icon { font-size: clamp(1.1rem, 1.8vw, 1.6rem); flex-shrink: 0; }
-
-  .col-label-text {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.1rem, 2.2vw, 2rem);
-    font-weight: 700; font-style: italic;
-    white-space: nowrap;
-  }
-  .half-girl .col-label-text { color: var(--pink-deep); }
-  .half-boy  .col-label-text { color: var(--blue-deep); }
-
-  /* Vote total pill — sits adjacent to divider */
-  .col-vote-total {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1rem, 1.8vw, 1.5rem);
-    font-weight: 700;
-    line-height: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.1rem;
-    flex-shrink: 0;
-  }
-
-  .col-vote-total .total-num { font-size: clamp(1.3rem, 2.2vw, 2rem); }
-  .col-vote-total .total-label { font-size: clamp(0.5rem, 0.65vw, 0.6rem); font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.45; color: var(--text-dark); font-family: 'DM Sans', sans-serif; }
-
-  /* Girl total pushed to right edge (near divider), boy total pushed to left edge */
-  .half-girl .col-vote-total { margin-left: auto; color: var(--pink-deep); }
-  .half-boy  .col-vote-total { margin-right: auto; color: var(--blue-deep); order: -1; }
-
-  /* ── Leaderboard col ── */
-  .col {
-    flex: 1;
-    padding: 0.2rem clamp(0.8rem, 2.5vw, 2.5rem) 1.2rem;
-    display: flex; flex-direction: column;
-    gap: var(--card-gap);
-    overflow: hidden; min-height: 0;
-  }
-  @media (max-width: 899px) { .col { overflow: visible; min-height: unset; padding-bottom: 1rem; } }
+  .col { flex:1; padding:0.2rem clamp(0.7rem,2.4vw,2.2rem) 1rem; display:flex; flex-direction:column; gap:var(--card-gap); overflow:hidden; min-height:0; }
+  @media (max-width:899px) { .col { overflow:visible; min-height:unset; padding-bottom:0.8rem; } }
 
   /* ── Name card ── */
-  .name-card {
-    display: flex; align-items: center;
-    gap: clamp(0.6rem, 1.2vw, 1.1rem);
-    padding: var(--card-pad-v) clamp(0.7rem, 1.4vw, 1.4rem);
-    border-radius: clamp(12px, 1.5vw, 18px);
-    position: relative; overflow: hidden;
-    opacity: 0; transform: translateY(24px);
-    transition: opacity 0.45s ease, transform 0.45s ease;
-    will-change: transform, opacity; flex-shrink: 0;
-  }
-  .name-card.visible { opacity: 1; transform: translateY(0); }
-
-  .name-card.girl {
-    background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(249,184,200,0.32));
-    border: 1.5px solid rgba(232,132,154,0.22);
-    box-shadow: 0 4px 20px rgba(232,132,154,0.1), 0 1px 4px rgba(0,0,0,0.05);
-  }
-  .name-card.boy {
-    background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(168,212,245,0.32));
-    border: 1.5px solid rgba(106,174,224,0.22);
-    box-shadow: 0 4px 20px rgba(106,174,224,0.1), 0 1px 4px rgba(0,0,0,0.05);
-  }
-  .name-card.rank-1::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.42), transparent);
-    animation: shimmer 3s ease-in-out infinite; pointer-events: none;
-  }
+  .name-card { display:flex; align-items:center; gap:clamp(0.6rem,1.1vw,1rem); padding:var(--card-pad-v) clamp(0.7rem,1.3vw,1.3rem); border-radius:clamp(10px,1.4vw,18px); position:relative; overflow:hidden; opacity:0; transform:translateY(22px); transition:opacity 0.45s ease,transform 0.45s ease; will-change:transform,opacity; flex-shrink:0; }
+  .name-card.visible { opacity:1; transform:translateY(0); }
+  .name-card.girl { background:linear-gradient(135deg,rgba(255,255,255,0.88),rgba(249,184,200,0.32)); border:1.5px solid rgba(232,132,154,0.22); box-shadow:0 4px 20px rgba(232,132,154,0.1),0 1px 4px rgba(0,0,0,0.05); }
+  .name-card.boy  { background:linear-gradient(135deg,rgba(255,255,255,0.88),rgba(168,212,245,0.32)); border:1.5px solid rgba(106,174,224,0.22); box-shadow:0 4px 20px rgba(106,174,224,0.1),0 1px 4px rgba(0,0,0,0.05); }
+  .name-card.rank-1::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent); animation:shimmer 3s ease-in-out infinite; pointer-events:none; }
   @keyframes shimmer { 0%{transform:translateX(-100%)} 60%{transform:translateX(100%)} 100%{transform:translateX(100%)} }
-
-  .rank-badge {
-    font-family: 'Playfair Display', serif; font-weight: 900;
-    width: clamp(1.7rem, 2.3vw, 2.4rem); height: clamp(1.7rem, 2.3vw, 2.4rem);
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; flex-shrink: 0; font-size: clamp(0.72rem, 0.95vw, 1rem);
-  }
-  .name-card.rank-1 .rank-badge { background: linear-gradient(135deg,#f7e06b,#d4a853); color:#5a3e00; }
-  .name-card.rank-2 .rank-badge { background: linear-gradient(135deg,#e8e8e8,#b0b0b0); color:#3a3a3a; }
-  .name-card.rank-3 .rank-badge { background: linear-gradient(135deg,#f5c89a,#c87941); color:#5a2e00; }
+  .rank-badge { font-family:'Playfair Display',serif; font-weight:900; width:clamp(1.6rem,2.2vw,2.3rem); height:clamp(1.6rem,2.2vw,2.3rem); display:flex; align-items:center; justify-content:center; border-radius:50%; flex-shrink:0; font-size:clamp(0.7rem,0.92vw,0.95rem); }
+  .name-card.rank-1 .rank-badge { background:linear-gradient(135deg,#f7e06b,#d4a853); color:#5a3e00; }
+  .name-card.rank-2 .rank-badge { background:linear-gradient(135deg,#e8e8e8,#b0b0b0); color:#3a3a3a; }
+  .name-card.rank-3 .rank-badge { background:linear-gradient(135deg,#f5c89a,#c87941); color:#5a2e00; }
   .name-card:not(.rank-1):not(.rank-2):not(.rank-3) .rank-badge { background:rgba(255,255,255,0.5); color:var(--text-dark); opacity:0.45; }
+  .crown { position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:clamp(0.8rem,1.2vw,1.1rem); animation:crown-bob 2s ease-in-out infinite; pointer-events:none; }
+  @keyframes crown-bob { 0%,100%{transform:translateX(-50%) translateY(0) rotate(-5deg)} 50%{transform:translateX(-50%) translateY(-4px) rotate(5deg)} }
+  .name-text { flex:1; font-family:'Playfair Display',serif; font-size:var(--name-font); font-weight:700; color:var(--text-dark); letter-spacing:0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .vote-section { display:flex; flex-direction:column; align-items:flex-end; gap:0.15rem; flex-shrink:0; }
+  .vote-count { font-family:'Playfair Display',serif; font-size:var(--count-font); font-weight:900; line-height:1; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),color 0.3s; }
+  .name-card.girl .vote-count { color:var(--pink-deep); }
+  .name-card.boy  .vote-count { color:var(--blue-deep); }
+  .vote-count.pop { transform:scale(1.4); color:var(--gold) !important; }
+  .vote-label { font-size:clamp(0.46rem,0.6vw,0.58rem); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; opacity:0.42; color:var(--text-dark); }
+  .vote-bar-track { position:absolute; bottom:0; left:0; right:0; height:3px; border-radius:0 0 18px 18px; background:rgba(0,0,0,0.05); overflow:hidden; }
+  .vote-bar-fill  { height:100%; border-radius:0 0 18px 18px; transition:width 0.8s cubic-bezier(0.25,1,0.5,1); }
+  .name-card.girl .vote-bar-fill { background:linear-gradient(to right,var(--pink-mid),var(--pink-deep)); }
+  .name-card.boy  .vote-bar-fill { background:linear-gradient(to right,var(--blue-mid),var(--blue-deep)); }
+  .empty-state { text-align:center; opacity:0.28; padding:2rem 1rem; }
+  .empty-state-icon { font-size:clamp(1.6rem,2.8vw,2.4rem); margin-bottom:0.4rem; }
+  .empty-state-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(0.88rem,1.3vw,1.15rem); color:var(--text-dark); }
 
-  .crown {
-    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-    font-size: clamp(0.85rem, 1.3vw, 1.2rem);
-    animation: crown-bob 2s ease-in-out infinite; pointer-events: none;
-  }
-  @keyframes crown-bob {
-    0%,100%{transform:translateX(-50%) translateY(0) rotate(-5deg)}
-    50%{transform:translateX(-50%) translateY(-4px) rotate(5deg)}
-  }
-
-  .name-text {
-    flex: 1; font-family: 'Playfair Display', serif;
-    font-size: var(--name-font); font-weight: 700;
-    color: var(--text-dark); letter-spacing: 0.01em;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
-  .vote-section { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; flex-shrink: 0; }
-
-  .vote-count {
-    font-family: 'Playfair Display', serif;
-    font-size: var(--count-font); font-weight: 900; line-height: 1;
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s;
-  }
-  .name-card.girl .vote-count { color: var(--pink-deep); }
-  .name-card.boy  .vote-count { color: var(--blue-deep); }
-  .vote-count.pop { transform: scale(1.4); color: var(--gold) !important; }
-
-  .vote-label { font-size: clamp(0.48rem, 0.62vw, 0.6rem); font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.45; color: var(--text-dark); }
-
-  .vote-bar-track { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 18px 18px; background: rgba(0,0,0,0.05); overflow: hidden; }
-  .vote-bar-fill  { height: 100%; border-radius: 0 0 18px 18px; transition: width 0.8s cubic-bezier(0.25,1,0.5,1); }
-  .name-card.girl .vote-bar-fill { background: linear-gradient(to right, var(--pink-mid), var(--pink-deep)); }
-  .name-card.boy  .vote-bar-fill { background: linear-gradient(to right, var(--blue-mid), var(--blue-deep)); }
-
-  .empty-state { text-align: center; opacity: 0.3; padding: 2rem 1rem; }
-  .empty-state-icon { font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 0.5rem; }
-  .empty-state-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(0.9rem, 1.4vw, 1.2rem); color: var(--text-dark); }
-
-  /* ═══ FOOTER BAND — ticker only, compact ═══ */
-  .footer-band {
-    background: var(--neutral);
-    border-top: 1.5px solid var(--neutral-border);
-    box-shadow: 0 -2px 24px rgba(212,168,83,0.07);
-    padding: 0.6rem clamp(1rem, 3vw, 3rem);
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    min-height: 0;
-  }
-
-  .ticker-label {
-    font-size: 0.65rem; font-weight: 500; letter-spacing: 0.22em;
-    text-transform: uppercase; color: var(--text-dark); opacity: 0.35;
-    white-space: nowrap; flex-shrink: 0;
-  }
-
-  .ticker-wrap { flex: 1; overflow: hidden; }
-
-  .ticker-inner {
-    display: flex; white-space: nowrap;
-    gap: 3rem;
-    animation: ticker-scroll 28s linear infinite;
-  }
-
-  /* Slightly larger ticker font as requested */
-  .ticker-item {
-    font-size: clamp(0.82rem, 1.1vw, 1rem);
-    font-weight: 500; color: var(--text-dark); opacity: 0.65;
-    display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
-  }
-
+  /* ── FOOTER ticker ── */
+  .footer-band { background:var(--neutral); border-top:1.5px solid var(--neutral-border); box-shadow:0 -2px 20px rgba(212,168,83,0.06); display:flex; align-items:center; padding:0.55rem clamp(1rem,2.5vw,2.5rem); gap:1rem; min-height:0; }
+  .ticker-label { font-size:0.6rem; font-weight:500; letter-spacing:0.24em; text-transform:uppercase; color:var(--text-dark); opacity:0.3; white-space:nowrap; flex-shrink:0; }
+  @media (max-width:480px) { .ticker-label { display:none; } }
+  .ticker-wrap { flex:1; overflow:hidden; }
+  .ticker-inner { display:flex; white-space:nowrap; gap:3rem; animation:ticker-scroll var(--ticker-duration) linear infinite; }
+  .ticker-item { font-size:clamp(0.84rem,1.05vw,0.98rem); font-weight:500; color:var(--text-dark); opacity:0.62; display:inline-flex; align-items:center; gap:0.35rem; flex-shrink:0; }
+  .ticker-item .t-voter { font-weight:700; }
+  .ticker-item .t-name  { font-family:'Playfair Display',serif; font-style:italic; }
   @keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-  /* Hide ticker label on very small screens */
-  @media (max-width: 480px) { .ticker-label { display: none; } }
-
-  /* ── Toast ── */
-  .toast {
-    position: fixed; bottom: 4rem; left: 50%;
-    transform: translateX(-50%) translateY(3rem);
-    background: white; border-radius: 50px;
-    padding: 0.7rem 1.8rem; font-size: 0.9rem; font-weight: 600;
-    color: var(--text-dark); box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-    z-index: 200; opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
-    pointer-events: none; white-space: nowrap;
-    border: 1px solid var(--neutral-border);
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast { position:fixed; bottom:4rem; left:50%; transform:translateX(-50%) translateY(3rem); background:white; border-radius:50px; padding:0.65rem 1.7rem; font-size:0.88rem; font-weight:600; color:var(--text-dark); box-shadow:0 8px 32px rgba(0,0,0,0.12); z-index:200; opacity:0; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s ease; pointer-events:none; white-space:nowrap; border:1px solid var(--neutral-border); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
-
 <canvas id="particles"></canvas>
 <canvas id="confetti-canvas"></canvas>
 
 <div class="page">
-
-  <!-- HEADER -->
   <header class="header-band">
-    <div class="header-text">
-      <div class="header-eyebrow">Scan the QR code &nbsp;·&nbsp; Suggest a name &nbsp;·&nbsp; Cast your vote</div>
-      <h1 class="header-title">
-        Vote for <span class="accent-pink">Baby's</span> <span class="accent-blue">Name</span>
-      </h1>
-      <p class="header-sub">Every vote counts — let the best name win ✨</p>
-    </div>
-
-    <!-- QR code top-right, clickable link to vote page -->
-    <a class="header-qr" id="qr-link" href="/vote" target="_blank" title="Scan to vote">
+    <div class="header-eyebrow">Scan the QR code &nbsp;·&nbsp; Suggest a name &nbsp;·&nbsp; Cast your vote</div>
+    <h1 class="header-title">Vote for <span class="accent-pink">Baby's</span> <span class="accent-blue">Name</span></h1>
+    <p class="header-sub">Every vote counts — let the best name win ✨</p>
+    <a class="header-qr" id="qr-link" href="/vote" target="_blank" title="Tap to vote">
       <img class="qr-image" id="qr-img" src="" alt="Scan to vote" />
     </a>
   </header>
 
-  <!-- MIDDLE -->
   <div class="middle">
     <div class="middle-divider"></div>
-
     <div class="half-girl">
       <div class="col-header">
         <span class="col-label-icon">🎀</span>
         <span class="col-label-text">Girl Names</span>
-        <div class="col-vote-total">
-          <span class="total-num" id="girl-total">0</span>
-          <span class="total-label">votes</span>
-        </div>
+        <div class="col-vote-total"><span class="total-num" id="girl-total">0</span><span class="total-label">votes</span></div>
       </div>
       <div class="col" id="girl-col"></div>
     </div>
-
     <div class="half-boy">
       <div class="col-header">
-        <div class="col-vote-total">
-          <span class="total-num" id="boy-total">0</span>
-          <span class="total-label">votes</span>
-        </div>
+        <div class="col-vote-total"><span class="total-num" id="boy-total">0</span><span class="total-label">votes</span></div>
         <span class="col-label-text">Boy Names</span>
         <span class="col-label-icon">🐋</span>
       </div>
@@ -395,103 +153,62 @@
     </div>
   </div>
 
-  <!-- FOOTER: ticker only -->
   <footer class="footer-band">
-    <span class="ticker-label">Recent votes</span>
-    <div class="ticker-wrap">
-      <div class="ticker-inner" id="ticker"></div>
-    </div>
+    <span class="ticker-label">Recent activity</span>
+    <div class="ticker-wrap"><div class="ticker-inner" id="ticker"></div></div>
   </footer>
-
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 // ─── Particles ────────────────────────────────────────────────────────────────
-const pCanvas = document.getElementById('particles'), pCtx = pCanvas.getContext('2d');
-function resizeP() { pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight; }
-resizeP(); window.addEventListener('resize', resizeP);
-const EMOJIS = ['✨','💕','🍼','⭐','💛','🌸','💙','🌟','💗'];
-function spawnP() {
-  return { x: Math.random()*window.innerWidth, y: window.innerHeight+20,
-    emoji: EMOJIS[Math.floor(Math.random()*EMOJIS.length)],
-    size: 11+Math.random()*12, vx:(Math.random()-.5)*.7, vy:-(0.4+Math.random()*.7),
-    opacity:0.1+Math.random()*.2, wobble:Math.random()*Math.PI*2, wobbleSpeed:0.01+Math.random()*.02 };
-}
-let particles = Array.from({length:25}, () => { const p=spawnP(); p.y=Math.random()*window.innerHeight; return p; });
-(function animP() {
-  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
-  particles.forEach(p => {
-    p.y+=p.vy; p.x+=p.vx+Math.sin(p.wobble)*.3; p.wobble+=p.wobbleSpeed;
-    if(p.y<-40) Object.assign(p,spawnP());
-    pCtx.globalAlpha=p.opacity; pCtx.font=`${p.size}px serif`; pCtx.fillText(p.emoji,p.x,p.y);
-  });
-  pCtx.globalAlpha=1; requestAnimationFrame(animP);
-})();
+const pCanvas=document.getElementById('particles'),pCtx=pCanvas.getContext('2d');
+function resizeP(){pCanvas.width=window.innerWidth;pCanvas.height=window.innerHeight;}
+resizeP();window.addEventListener('resize',resizeP);
+const EMOJIS=['✨','💕','🍼','⭐','💛','🌸','💙','🌟','💗'];
+function spawnP(){return{x:Math.random()*window.innerWidth,y:window.innerHeight+20,emoji:EMOJIS[Math.floor(Math.random()*EMOJIS.length)],size:11+Math.random()*12,vx:(Math.random()-.5)*.7,vy:-(0.4+Math.random()*.7),opacity:0.1+Math.random()*.2,wobble:Math.random()*Math.PI*2,wobbleSpeed:0.01+Math.random()*.02};}
+let particles=Array.from({length:25},()=>{const p=spawnP();p.y=Math.random()*window.innerHeight;return p;});
+(function animP(){pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);particles.forEach(p=>{p.y+=p.vy;p.x+=p.vx+Math.sin(p.wobble)*.3;p.wobble+=p.wobbleSpeed;if(p.y<-40)Object.assign(p,spawnP());pCtx.globalAlpha=p.opacity;pCtx.font=`${p.size}px serif`;pCtx.fillText(p.emoji,p.x,p.y);});pCtx.globalAlpha=1;requestAnimationFrame(animP);})();
 
 // ─── Confetti ─────────────────────────────────────────────────────────────────
 const cCanvas=document.getElementById('confetti-canvas'),cCtx=cCanvas.getContext('2d');
 function resizeC(){cCanvas.width=window.innerWidth;cCanvas.height=window.innerHeight;}
-resizeC(); window.addEventListener('resize',resizeC);
+resizeC();window.addEventListener('resize',resizeC);
 let confettiPieces=[];
-function launchConfetti(){
-  const colors=['#f9b8c8','#a8d4f5','#ffd700','#ff9ebc','#72c1f5','#fff','#ffd6e0','#cce8ff'];
-  for(let i=0;i<130;i++) confettiPieces.push({
-    x:Math.random()*cCanvas.width,y:-10,w:6+Math.random()*8,h:8+Math.random()*12,
-    color:colors[Math.floor(Math.random()*colors.length)],
-    vx:(Math.random()-.5)*5,vy:3+Math.random()*4,rot:Math.random()*360,
-    rotV:(Math.random()-.5)*8,life:1
-  });
-  animConfetti();
-}
-function animConfetti(){
-  cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);
-  confettiPieces=confettiPieces.filter(p=>p.life>.05);
-  confettiPieces.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.rot+=p.rotV;p.life-=.008;
-    cCtx.save();cCtx.globalAlpha=p.life;cCtx.translate(p.x,p.y);cCtx.rotate(p.rot*Math.PI/180);
-    cCtx.fillStyle=p.color;cCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cCtx.restore();
-  });
-  if(confettiPieces.length) requestAnimationFrame(animConfetti);
-  else cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);
-}
+function launchConfetti(){const colors=['#f9b8c8','#a8d4f5','#ffd700','#ff9ebc','#72c1f5','#fff','#ffd6e0','#cce8ff'];for(let i=0;i<130;i++)confettiPieces.push({x:Math.random()*cCanvas.width,y:-10,w:6+Math.random()*8,h:8+Math.random()*12,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-.5)*5,vy:3+Math.random()*4,rot:Math.random()*360,rotV:(Math.random()-.5)*8,life:1});animConfetti();}
+function animConfetti(){cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);confettiPieces=confettiPieces.filter(p=>p.life>.05);confettiPieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.rot+=p.rotV;p.life-=.008;cCtx.save();cCtx.globalAlpha=p.life;cCtx.translate(p.x,p.y);cCtx.rotate(p.rot*Math.PI/180);cCtx.fillStyle=p.color;cCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cCtx.restore();});if(confettiPieces.length)requestAnimationFrame(animConfetti);else cCtx.clearRect(0,0,cCanvas.width,cCanvas.height);}
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
-}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);}
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let prevData={girls:[],boys:[]}, leaderboardCount=5;
+let prevData={girls:[],boys:[]},leaderboardCount=5;
+let tickerSettings={ count:20, template:'{gender_emoji} {voter} → {name}', speed:'normal' };
 
 // ─── Dynamic sizing ───────────────────────────────────────────────────────────
 function applySizeForCount(n){
   const r=document.documentElement;
-  if(n<=3){
-    r.style.setProperty('--name-font','clamp(1.6rem,2.8vw,2.4rem)');
-    r.style.setProperty('--count-font','clamp(1.9rem,3.2vw,2.8rem)');
-    r.style.setProperty('--card-pad-v','1.3rem');
-    r.style.setProperty('--card-gap','1.1rem');
-  } else if(n<=5){
-    r.style.setProperty('--name-font','clamp(1.35rem,2.2vw,1.85rem)');
-    r.style.setProperty('--count-font','clamp(1.6rem,2.6vw,2.2rem)');
-    r.style.setProperty('--card-pad-v','1rem');
-    r.style.setProperty('--card-gap','0.85rem');
-  } else if(n<=7){
-    r.style.setProperty('--name-font','clamp(1.1rem,1.8vw,1.5rem)');
-    r.style.setProperty('--count-font','clamp(1.3rem,2vw,1.8rem)');
-    r.style.setProperty('--card-pad-v','0.75rem');
-    r.style.setProperty('--card-gap','0.6rem');
-  } else {
-    r.style.setProperty('--name-font','clamp(0.95rem,1.5vw,1.3rem)');
-    r.style.setProperty('--count-font','clamp(1.1rem,1.7vw,1.55rem)');
-    r.style.setProperty('--card-pad-v','0.6rem');
-    r.style.setProperty('--card-gap','0.45rem');
-  }
+  if(n<=3){r.style.setProperty('--name-font','clamp(1.6rem,2.8vw,2.4rem)');r.style.setProperty('--count-font','clamp(1.9rem,3.2vw,2.8rem)');r.style.setProperty('--card-pad-v','1.3rem');r.style.setProperty('--card-gap','1.1rem');}
+  else if(n<=5){r.style.setProperty('--name-font','clamp(1.35rem,2.2vw,1.85rem)');r.style.setProperty('--count-font','clamp(1.6rem,2.6vw,2.2rem)');r.style.setProperty('--card-pad-v','1rem');r.style.setProperty('--card-gap','0.85rem');}
+  else if(n<=7){r.style.setProperty('--name-font','clamp(1.1rem,1.8vw,1.5rem)');r.style.setProperty('--count-font','clamp(1.3rem,2vw,1.8rem)');r.style.setProperty('--card-pad-v','0.75rem');r.style.setProperty('--card-gap','0.6rem');}
+  else{r.style.setProperty('--name-font','clamp(0.95rem,1.5vw,1.3rem)');r.style.setProperty('--count-font','clamp(1.1rem,1.7vw,1.55rem)');r.style.setProperty('--card-pad-v','0.6rem');r.style.setProperty('--card-gap','0.45rem');}
+}
+
+function applyTickerSpeed(speed){
+  const durations={slow:'48s',normal:'32s',fast:'18s'};
+  document.documentElement.style.setProperty('--ticker-duration', durations[speed]||'32s');
+}
+
+// ─── Template renderer ────────────────────────────────────────────────────────
+// Replaces {voter}, {name}, {gender_emoji} in the admin-defined template.
+// Any other text (including emojis typed literally) passes through unchanged.
+function renderTickerItem(vote, template){
+  const genderEmoji = vote.nameGender==='girl' ? '🎀' : '🐋';
+  return template
+    .replace(/\{gender_emoji\}/g, genderEmoji)
+    .replace(/\{voter\}/g,        `<span class="t-voter">${vote.voterName}</span>`)
+    .replace(/\{name\}/g,         `<span class="t-name">${vote.nameName}</span>`);
 }
 
 // ─── Render column ────────────────────────────────────────────────────────────
@@ -501,15 +218,7 @@ function renderCol(colId,names,gender,prevNames){
   const maxVotes=topN.length?Math.max(...topN.map(n=>n.votes),1):1;
   const top1=topN[0],prevTop1=prevNames[0];
   const isNewTop1=top1&&prevTop1&&top1._id!==prevTop1._id&&top1.votes>0;
-
-  if(!topN.length){
-    col.innerHTML=`<div class="empty-state">
-      <div class="empty-state-icon">${gender==='girl'?'🎀':'🐋'}</div>
-      <div class="empty-state-text">No names yet — be the first!</div>
-    </div>`;
-    return;
-  }
-
+  if(!topN.length){col.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${gender==='girl'?'🎀':'🐋'}</div><div class="empty-state-text">No names yet — be the first!</div></div>`;return;}
   col.innerHTML=topN.map((name,i)=>{
     const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
     const rankLabel=i===0?'👑':`${i+1}`;
@@ -517,112 +226,77 @@ function renderCol(colId,names,gender,prevNames){
       ${i===0?'<div class="crown">👑</div>':''}
       <div class="rank-badge">${rankLabel}</div>
       <div class="name-text">${name.name}</div>
-      <div class="vote-section">
-        <div class="vote-count" id="vc-${name._id}">${name.votes}</div>
-        <div class="vote-label">votes</div>
-      </div>
+      <div class="vote-section"><div class="vote-count" id="vc-${name._id}">${name.votes}</div><div class="vote-label">votes</div></div>
       <div class="vote-bar-track"><div class="vote-bar-fill" style="width:0%"></div></div>
     </div>`;
   }).join('');
-
   requestAnimationFrame(()=>{
     col.querySelectorAll('.name-card').forEach(c=>requestAnimationFrame(()=>c.classList.add('visible')));
-    setTimeout(()=>{
-      topN.forEach(name=>{
-        const pct=Math.round((name.votes/maxVotes)*100);
-        const card=col.querySelector(`[data-id="${name._id}"]`);
-        if(card){const bar=card.querySelector('.vote-bar-fill');if(bar)bar.style.width=pct+'%';}
-      });
-    },80);
+    setTimeout(()=>{topN.forEach(name=>{const pct=Math.round((name.votes/maxVotes)*100);const card=col.querySelector(`[data-id="${name._id}"]`);if(card){const bar=card.querySelector('.vote-bar-fill');if(bar)bar.style.width=pct+'%';}});},80);
   });
-
   if(isNewTop1){launchConfetti();showToast(`👑 ${top1.name} takes the lead!`);}
 }
 
-// ─── Fetch & render ───────────────────────────────────────────────────────────
 async function fetchAndRender(animated=false){
-  const res=await fetch('/api/names');
-  const names=await res.json();
+  const names=await(await fetch('/api/names')).json();
   const girls=names.filter(n=>n.gender==='girl').sort((a,b)=>b.votes-a.votes);
   const boys=names.filter(n=>n.gender==='boy').sort((a,b)=>b.votes-a.votes);
-
   let needsRerender=animated;
   if(!needsRerender){
     const pg=prevData.girls.slice(0,leaderboardCount).map(n=>n._id).join(',');
     const cg=girls.slice(0,leaderboardCount).map(n=>n._id).join(',');
     const pb=prevData.boys.slice(0,leaderboardCount).map(n=>n._id).join(',');
     const cb=boys.slice(0,leaderboardCount).map(n=>n._id).join(',');
-    if(pg!==cg||pb!==cb) needsRerender=true;
+    if(pg!==cg||pb!==cb)needsRerender=true;
   }
-
-  if(needsRerender){
-    renderCol('girl-col',girls,'girl',prevData.girls);
-    renderCol('boy-col',boys,'boy',prevData.boys);
-  } else {
-    [...girls.slice(0,leaderboardCount),...boys.slice(0,leaderboardCount)].forEach(name=>{
-      const el=document.getElementById(`vc-${name._id}`);
-      if(!el)return;
-      const prev=parseInt(el.textContent);
-      if(prev!==name.votes){
-        el.textContent=name.votes;
-        el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
-        setTimeout(()=>el.classList.remove('pop'),500);
-        const card=el.closest('.name-card');
-        if(card){
-          const list=name.gender==='girl'?girls:boys;
-          const max=Math.max(...list.slice(0,leaderboardCount).map(n=>n.votes),1);
-          const bar=card.querySelector('.vote-bar-fill');
-          if(bar)bar.style.width=Math.round((name.votes/max)*100)+'%';
-        }
-      }
-    });
-  }
-
+  if(needsRerender){renderCol('girl-col',girls,'girl',prevData.girls);renderCol('boy-col',boys,'boy',prevData.boys);}
+  else{[...girls.slice(0,leaderboardCount),...boys.slice(0,leaderboardCount)].forEach(name=>{const el=document.getElementById(`vc-${name._id}`);if(!el)return;const prev=parseInt(el.textContent);if(prev!==name.votes){el.textContent=name.votes;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),500);const card=el.closest('.name-card');if(card){const list=name.gender==='girl'?girls:boys;const max=Math.max(...list.slice(0,leaderboardCount).map(n=>n.votes),1);const bar=card.querySelector('.vote-bar-fill');if(bar)bar.style.width=Math.round((name.votes/max)*100)+'%';}}});}
   document.getElementById('girl-total').textContent=girls.reduce((s,n)=>s+n.votes,0);
   document.getElementById('boy-total').textContent=boys.reduce((s,n)=>s+n.votes,0);
   prevData={girls,boys};
-  updateTicker(names);
 }
 
-function updateTicker(names){
-  const items=names.filter(n=>n.votes>0).sort((a,b)=>b.votes-a.votes).slice(0,14)
-    .map(n=>`<span class="ticker-item">${n.gender==='girl'?'🎀':'🐋'} <strong>${n.name}</strong> — ${n.votes} vote${n.votes!==1?'s':''}</span>`)
-    .join('');
-  const ticker=document.getElementById('ticker');
-  if(items) ticker.innerHTML=items+items;
-}
-
-async function loadQR(){
-  const {qr,url}=await(await fetch('/api/qr')).json();
-  document.getElementById('qr-img').src=qr;
-  document.getElementById('qr-link').href=url;
+async function updateTicker(){
+  try{
+    const votes=await(await fetch(`/api/recent-votes?limit=${tickerSettings.count}`)).json();
+    if(!votes.length)return;
+    const items=votes.map(v=>`<span class="ticker-item">${renderTickerItem(v,tickerSettings.template)}</span>`).join('');
+    const ticker=document.getElementById('ticker');
+    ticker.innerHTML=items+items; // duplicate for seamless loop
+  }catch(e){console.warn('Ticker fetch failed',e);}
 }
 
 async function loadSettings(){
   const s=await(await fetch('/api/settings')).json();
   leaderboardCount=s.leaderboardCount;
   applySizeForCount(leaderboardCount);
+  tickerSettings={count:s.tickerCount||20,template:s.tickerTemplate||'{gender_emoji} {voter} → {name}',speed:s.tickerSpeed||'normal'};
+  applyTickerSpeed(tickerSettings.speed);
+}
+
+async function loadQR(){
+  const{qr,url}=await(await fetch('/api/qr')).json();
+  document.getElementById('qr-img').src=qr;
+  document.getElementById('qr-link').href=url;
 }
 
 function connectSSE(){
   const es=new EventSource('/api/events');
   es.addEventListener('connected',()=>console.log('SSE ✓'));
-  es.addEventListener('update',()=>fetchAndRender(false));
+  es.addEventListener('update',()=>{fetchAndRender(false);updateTicker();});
   es.addEventListener('settings',e=>{
     const s=JSON.parse(e.data);
     leaderboardCount=s.leaderboardCount;
     applySizeForCount(leaderboardCount);
+    tickerSettings={count:s.tickerCount||20,template:s.tickerTemplate||'{gender_emoji} {voter} → {name}',speed:s.tickerSpeed||'normal'};
+    applyTickerSpeed(tickerSettings.speed);
     fetchAndRender(true);
+    updateTicker();
   });
   es.onerror=()=>{es.close();setTimeout(connectSSE,3000);};
 }
 
-(async()=>{
-  await loadSettings();
-  fetchAndRender(true);
-  loadQR();
-  connectSSE();
-})();
+(async()=>{await loadSettings();await fetchAndRender(true);await updateTicker();loadQR();connectSSE();})();
 </script>
 </body>
 </html>

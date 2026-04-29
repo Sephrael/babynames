@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Database & persistent data — never commit these
+# Database & persistent data — never commit
 data/
 *.db
 

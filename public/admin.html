@@ -7,161 +7,163 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f0e13; --surface: #1a1825; --surface2: #221f2e; --surface3: #2a2638;
-    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
-    --pink: #f2a0b8; --pink-deep: #e06080;
-    --blue: #8fc6ee; --blue-deep: #5aaddf;
-    --gold: #d4a853; --gold-dim: rgba(212,168,83,0.15);
-    --text: #f0ecff; --muted: #8a8199;
-    --green: #52c97a; --red: #e05c5c; --amber: #e0a030;
-    --radius: 14px;
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0f0e13;--surface:#1a1825;--surface2:#221f2e;--surface3:#2a2638;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+    --pink:#f2a0b8;--pink-deep:#e06080;--blue:#8fc6ee;--blue-deep:#5aaddf;
+    --gold:#d4a853;--text:#f0ecff;--muted:#8a8199;
+    --green:#52c97a;--red:#e05c5c;--amber:#e0a030;--radius:14px;
   }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
   /* ── TOPBAR ── */
-  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 50; }
-  .topbar-icon { font-size: 1.4rem; }
-  .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; font-style: italic; flex: 1; }
-  .topbar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:50;}
+  .topbar-icon{font-size:1.4rem;}
+  .topbar-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;font-style:italic;flex:1;}
+  .topbar-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
 
   /* ── BUTTONS ── */
-  .btn { border: none; border-radius: 8px; padding: 0.5rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--gold); color: #1a0e00; }
-  .btn-primary:hover { background: #e0b55c; }
-  .btn-success { background: rgba(82,201,122,0.15); color: var(--green); border: 1px solid rgba(82,201,122,0.3); }
-  .btn-success:hover { background: rgba(82,201,122,0.25); }
-  .btn-danger { background: rgba(224,92,92,0.12); color: var(--red); border: 1px solid rgba(224,92,92,0.2); }
-  .btn-danger:hover { background: rgba(224,92,92,0.22); }
-  .btn-ghost { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
-  .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+  .btn{border:none;border-radius:8px;padding:0.5rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:0.4rem;white-space:nowrap;}
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--gold);color:#1a0e00;}.btn-primary:hover{background:#e0b55c;}
+  .btn-success{background:rgba(82,201,122,0.15);color:var(--green);border:1px solid rgba(82,201,122,0.3);}.btn-success:hover{background:rgba(82,201,122,0.25);}
+  .btn-danger{background:rgba(224,92,92,0.12);color:var(--red);border:1px solid rgba(224,92,92,0.2);}.btn-danger:hover{background:rgba(224,92,92,0.22);}
+  .btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+  .btn-sm{padding:0.35rem 0.7rem;font-size:0.78rem;}
 
   /* ── LAYOUT ── */
-  .page { max-width: 1300px; margin: 0 auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .page{max-width:1300px;margin:0 auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.5rem;}
 
-  /* ── STATS ROW ── */
-  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; }
-  .stat-label { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
-  .stat-value { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 700; line-height: 1; }
-  .stat-value.pink { color: var(--pink); }
-  .stat-value.blue { color: var(--blue); }
-  .stat-value.gold { color: var(--gold); }
-  .stat-value.green { color: var(--green); }
-  .stat-value.amber { color: var(--amber); }
+  /* ── STATS ── */
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.8rem;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;}
+  .stat-label{font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;}
+  .stat-value{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;line-height:1;}
+  .stat-value.pink{color:var(--pink);}.stat-value.blue{color:var(--blue);}.stat-value.gold{color:var(--gold);}.stat-value.green{color:var(--green);}.stat-value.amber{color:var(--amber);}
 
   /* ── SETTINGS PANEL ── */
-  .settings-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .settings-header { padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.6rem; cursor: pointer; user-select: none; }
-  .settings-header:hover { background: var(--surface2); }
-  .settings-title { font-size: 0.9rem; font-weight: 600; flex: 1; }
-  .settings-chevron { font-size: 0.7rem; color: var(--muted); transition: transform 0.2s; }
-  .settings-chevron.open { transform: rotate(180deg); }
-  .settings-body { display: none; padding: 1.2rem; gap: 1.5rem; grid-template-columns: 1fr 1fr; }
-  .settings-body.open { display: grid; }
+  .settings-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .settings-header{padding:0.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.6rem;cursor:pointer;user-select:none;}
+  .settings-header:hover{background:var(--surface2);}
+  .settings-title{font-size:0.9rem;font-weight:600;flex:1;}
+  .settings-chevron{font-size:0.7rem;color:var(--muted);transition:transform 0.2s;}
+  .settings-chevron.open{transform:rotate(180deg);}
+  .settings-body{display:none;padding:1.2rem;gap:1.5rem;grid-template-columns:1fr 1fr;}
+  .settings-body.open{display:grid;}
+  @media(max-width:700px){.settings-body.open{grid-template-columns:1fr;}}
 
-  .setting-group { display: flex; flex-direction: column; gap: 0.5rem; }
-  .setting-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .setting-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.4; margin-bottom: 0.3rem; }
+  .setting-group{display:flex;flex-direction:column;gap:0.5rem;}
+  .setting-label{font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+  .setting-desc{font-size:0.82rem;color:var(--muted);line-height:1.4;}
 
-  /* Toggle switch */
-  .toggle-row { display: flex; align-items: center; gap: 0.8rem; }
-  .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-track { position: absolute; inset: 0; background: var(--surface3); border-radius: 24px; transition: background 0.2s; border: 1px solid var(--border2); }
-  .toggle input:checked + .toggle-track { background: var(--amber); border-color: var(--amber); }
-  .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: var(--muted); border-radius: 50%; transition: transform 0.2s, background 0.2s; }
-  .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); background: white; }
-  .toggle-state { font-size: 0.85rem; font-weight: 600; }
+  /* Toggle */
+  .toggle-row{display:flex;align-items:center;gap:0.8rem;}
+  .toggle{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle-track{position:absolute;inset:0;background:var(--surface3);border-radius:24px;transition:background 0.2s;border:1px solid var(--border2);}
+  .toggle input:checked+.toggle-track{background:var(--amber);border-color:var(--amber);}
+  .toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--muted);border-radius:50%;transition:transform 0.2s,background 0.2s;}
+  .toggle input:checked~.toggle-thumb{transform:translateX(20px);background:white;}
+  .toggle-state{font-size:0.85rem;font-weight:600;}
 
-  /* Leaderboard count stepper */
-  .stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--border2); border-radius: 10px; overflow: hidden; width: fit-content; }
-  .stepper-btn { background: var(--surface2); border: none; color: var(--text); width: 36px; height: 36px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-  .stepper-btn:hover { background: var(--surface3); }
-  .stepper-val { background: var(--surface3); color: var(--text); font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; width: 48px; text-align: center; height: 36px; line-height: 36px; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+  /* Stepper */
+  .stepper{display:flex;align-items:center;border:1px solid var(--border2);border-radius:10px;overflow:hidden;width:fit-content;}
+  .stepper-btn{background:var(--surface2);border:none;color:var(--text);width:36px;height:36px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+  .stepper-btn:hover{background:var(--surface3);}
+  .stepper-val{background:var(--surface3);color:var(--text);font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;width:48px;text-align:center;height:36px;line-height:36px;border-left:1px solid var(--border);border-right:1px solid var(--border);}
 
-  .save-settings-btn { margin-top: 0.5rem; align-self: flex-start; }
+  /* Speed selector */
+  .speed-select{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;padding:0.5rem 0.8rem;cursor:pointer;outline:none;}
+  .speed-select:focus{border-color:var(--gold);}
 
-  /* ── PENDING QUEUE ── */
-  .pending-panel { background: var(--surface); border: 1px solid rgba(224,160,48,0.25); border-radius: var(--radius); overflow: hidden; }
-  .pending-header { padding: 0.9rem 1.2rem; border-bottom: 1px solid rgba(224,160,48,0.15); display: flex; align-items: center; gap: 0.6rem; background: rgba(224,160,48,0.05); }
-  .pending-title { font-size: 0.9rem; font-weight: 600; flex: 1; color: var(--amber); }
-  .pending-badge { background: var(--amber); color: #1a0e00; font-size: 0.72rem; font-weight: 800; border-radius: 50px; padding: 0.15rem 0.55rem; }
-  .pending-empty { padding: 1.5rem; text-align: center; color: var(--muted); font-size: 0.88rem; font-style: italic; }
-  .pending-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--border); }
-  .pending-item:last-child { border-bottom: none; }
-  .pending-item:hover { background: var(--surface2); }
-  .pending-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .pending-dot.girl { background: var(--pink); }
-  .pending-dot.boy  { background: var(--blue); }
-  .pending-name { flex: 1; font-weight: 600; font-size: 0.95rem; }
-  .pending-meta { font-size: 0.75rem; color: var(--muted); }
-  .pending-actions { display: flex; gap: 0.4rem; }
+  /* Template editor */
+  .template-section{grid-column:1/-1;}
+  .template-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.9rem;padding:0.75rem 1rem;outline:none;transition:border-color 0.2s;resize:none;}
+  .template-input:focus{border-color:var(--gold);}
+  .template-preview-label{font-size:0.72rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-top:0.6rem;margin-bottom:0.3rem;}
+  .template-preview{background:var(--surface3);border-radius:8px;padding:0.6rem 1rem;font-size:0.9rem;color:var(--text);min-height:2.2rem;border:1px solid var(--border);}
+  .template-preview .t-voter{font-weight:700;}
+  .template-preview .t-name{font-style:italic;}
 
-  /* ── TWO COLUMN ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
-  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } .settings-body.open { grid-template-columns: 1fr; } }
+  /* Variable chips */
+  .var-chips{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;}
+  .var-chip{background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:0.2rem 0.55rem;font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--gold);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .var-chip:hover{background:rgba(212,168,83,0.12);border-color:var(--gold);}
+  .var-chip-label{font-size:0.72rem;color:var(--muted);align-self:center;}
+
+  .settings-footer{grid-column:1/-1;display:flex;justify-content:flex-end;padding-top:0.5rem;border-top:1px solid var(--border);}
+  .save-btn{}
+
+  /* ── PENDING ── */
+  .pending-panel{background:var(--surface);border:1px solid rgba(224,160,48,0.25);border-radius:var(--radius);overflow:hidden;}
+  .pending-header{padding:0.9rem 1.2rem;border-bottom:1px solid rgba(224,160,48,0.15);display:flex;align-items:center;gap:0.6rem;background:rgba(224,160,48,0.05);}
+  .pending-title{font-size:0.9rem;font-weight:600;flex:1;color:var(--amber);}
+  .pending-badge{background:var(--amber);color:#1a0e00;font-size:0.72rem;font-weight:800;border-radius:50px;padding:0.15rem 0.55rem;}
+  .pending-empty{padding:1.5rem;text-align:center;color:var(--muted);font-size:0.88rem;font-style:italic;}
+  .pending-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);}
+  .pending-item:last-child{border-bottom:none;}
+  .pending-item:hover{background:var(--surface2);}
+  .pending-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .pending-dot.girl{background:var(--pink);}.pending-dot.boy{background:var(--blue);}
+  .pending-name{flex:1;font-weight:600;font-size:0.95rem;}
+  .pending-meta{font-size:0.75rem;color:var(--muted);}
+  .pending-actions{display:flex;gap:0.4rem;}
+
+  /* ── TWO COL ── */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+  @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
 
   /* ── PANEL ── */
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .panel-header { padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.6rem; }
-  .panel-title { font-size: 0.9rem; font-weight: 600; flex: 1; }
-  .panel-badge { font-size: 0.72rem; font-weight: 700; background: var(--surface2); border-radius: 50px; padding: 0.15rem 0.55rem; color: var(--muted); }
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .panel-header{padding:0.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.6rem;}
+  .panel-title{font-size:0.9rem;font-weight:600;flex:1;}
+  .panel-badge{font-size:0.72rem;font-weight:700;background:var(--surface2);border-radius:50px;padding:0.15rem 0.55rem;color:var(--muted);}
+  .name-row{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 1.2rem;border-bottom:1px solid var(--border);transition:background 0.15s;}
+  .name-row:last-child{border-bottom:none;}.name-row:hover{background:var(--surface2);}
+  .rank-num{font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);width:1.4rem;text-align:right;flex-shrink:0;}
+  .name-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .name-dot.girl{background:var(--pink);}.name-dot.boy{background:var(--blue);}
+  .row-name{flex:1;font-weight:500;font-size:0.92rem;}
+  .row-votes{font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--gold);font-weight:500;}
+  .row-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0.2rem 0.3rem;border-radius:4px;transition:color 0.15s,background 0.15s;line-height:1;}
+  .row-delete:hover{color:var(--red);background:rgba(224,92,92,0.1);}
+  .name-row-empty{padding:1.2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.88rem;}
 
-  /* Name rows */
-  .name-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 1.2rem; border-bottom: 1px solid var(--border); transition: background 0.15s; }
-  .name-row:last-child { border-bottom: none; }
-  .name-row:hover { background: var(--surface2); }
-  .rank-num { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); width: 1.4rem; text-align: right; flex-shrink: 0; }
-  .name-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .name-dot.girl { background: var(--pink); }
-  .name-dot.boy  { background: var(--blue); }
-  .row-name { flex: 1; font-weight: 500; font-size: 0.92rem; }
-  .row-votes { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--gold); font-weight: 500; }
-  .row-delete { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 0.2rem 0.3rem; border-radius: 4px; transition: color 0.15s, background 0.15s; line-height: 1; }
-  .row-delete:hover { color: var(--red); background: rgba(224,92,92,0.1); }
-  .name-row-empty { padding: 1.2rem; text-align: center; color: var(--muted); font-style: italic; font-size: 0.88rem; }
-
-  /* ── VOTE LOG TABLE ── */
-  .votes-panel { }
-  .filter-row { display: flex; gap: 0.4rem; padding: 0.7rem 1.2rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-  .filter-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
-  .filter-btn.active { color: var(--gold); border-color: rgba(212,168,83,0.3); }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  th { text-align: left; padding: 0.65rem 1.1rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 0.7rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.015); }
-  .gender-tag { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600; padding: 0.12rem 0.45rem; border-radius: 4px; }
-  .gender-tag.girl { background: rgba(242,160,184,0.12); color: var(--pink); }
-  .gender-tag.boy  { background: rgba(143,198,238,0.12); color: var(--blue); }
-  .voter-name-cell { display: flex; flex-direction: column; gap: 0.1rem; }
-  .voter-display-name { font-weight: 600; font-size: 0.88rem; }
-  .voter-display-name.anon { color: var(--muted); font-style: italic; }
-  .device-id { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.5; }
-  .timestamp { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
-  .empty-row td { text-align: center; padding: 1.8rem; color: var(--muted); font-style: italic; }
+  /* ── VOTE LOG ── */
+  .filter-row{display:flex;gap:0.4rem;padding:0.7rem 1.2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .filter-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.7rem;font-size:0.78rem;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+  .filter-btn.active{color:var(--gold);border-color:rgba(212,168,83,0.3);}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+  th{text-align:left;padding:0.65rem 1.1rem;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+  td{padding:0.7rem 1.1rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(255,255,255,0.015);}
+  .gender-tag{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;font-weight:600;padding:0.12rem 0.45rem;border-radius:4px;}
+  .gender-tag.girl{background:rgba(242,160,184,0.12);color:var(--pink);}.gender-tag.boy{background:rgba(143,198,238,0.12);color:var(--blue);}
+  .voter-name-cell{display:flex;flex-direction:column;gap:0.1rem;}
+  .voter-display-name{font-weight:600;font-size:0.88rem;}
+  .voter-display-name.anon{color:var(--muted);font-style:italic;}
+  .device-id{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.5;}
+  .timestamp{font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);white-space:nowrap;}
+  .empty-row td{text-align:center;padding:1.8rem;color:var(--muted);font-style:italic;}
 
   /* ── MODAL ── */
-  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; display: none; align-items: center; justify-content: center; }
-  .modal-bg.show { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.8rem; max-width: 340px; width: 90%; text-align: center; animation: modal-in 0.22s cubic-bezier(0.34,1.56,0.64,1); }
-  @keyframes modal-in { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .modal-icon { font-size: 2.2rem; margin-bottom: 0.8rem; }
-  .modal-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.3rem; line-height: 1.5; }
-  .modal-btns { display: flex; gap: 0.6rem; justify-content: center; }
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:none;align-items:center;justify-content:center;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.8rem;max-width:340px;width:90%;text-align:center;animation:modal-in 0.22s cubic-bezier(0.34,1.56,0.64,1);}
+  @keyframes modal-in{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-icon{font-size:2.2rem;margin-bottom:0.8rem;}
+  .modal-title{font-size:1.05rem;font-weight:700;margin-bottom:0.4rem;}
+  .modal-sub{font-size:0.85rem;color:var(--muted);margin-bottom:1.3rem;line-height:1.5;}
+  .modal-btns{display:flex;gap:0.6rem;justify-content:center;}
 
   /* ── TOAST ── */
-  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1.2rem; font-size: 0.88rem; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.3); z-index: 9999; transform: translateY(3rem); opacity: 0; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-color: rgba(82,201,122,0.3); color: var(--green); }
-  .toast.error   { border-color: rgba(224,92,92,0.3);  color: var(--red); }
-  .toast.info    { border-color: rgba(212,168,83,0.3);  color: var(--gold); }
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.8rem 1.2rem;font-size:0.88rem;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.3);z-index:9999;transform:translateY(3rem);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.success{border-color:rgba(82,201,122,0.3);color:var(--green);}
+  .toast.error{border-color:rgba(224,92,92,0.3);color:var(--red);}
+  .toast.info{border-color:rgba(212,168,83,0.3);color:var(--gold);}
 </style>
 </head>
 <body>
@@ -188,7 +190,7 @@
     <div class="stat-card"><div class="stat-label">Pending</div>    <div class="stat-value amber" id="stat-pending">—</div></div>
   </div>
 
-  <!-- Settings panel (collapsible) -->
+  <!-- Settings -->
   <div class="settings-panel">
     <div class="settings-header" onclick="toggleSettings()">
       <span>⚙️</span>
@@ -197,10 +199,10 @@
     </div>
     <div class="settings-body" id="settings-body">
 
-      <!-- Moderation toggle -->
+      <!-- Moderation -->
       <div class="setting-group">
         <div class="setting-label">Name Moderation</div>
-        <div class="setting-desc">When enabled, submitted names go into a pending queue and only appear on the leaderboard after you approve them.</div>
+        <div class="setting-desc">When on, submitted names wait in a queue and only appear after you approve them.</div>
         <div class="toggle-row">
           <label class="toggle">
             <input type="checkbox" id="moderation-toggle" onchange="settingsDirty()">
@@ -214,19 +216,79 @@
       <!-- Leaderboard count -->
       <div class="setting-group">
         <div class="setting-label">Leaderboard Count</div>
-        <div class="setting-desc">Number of names shown per side on the TV display. Layout and font size adjust automatically.</div>
+        <div class="setting-desc">Names shown per side on the TV display. Font and card size adjust automatically.</div>
         <div class="stepper">
           <button class="stepper-btn" onclick="stepCount(-1)">−</button>
           <div class="stepper-val" id="count-val">5</div>
           <button class="stepper-btn" onclick="stepCount(1)">+</button>
         </div>
-        <button class="btn btn-primary save-settings-btn" id="save-btn" onclick="saveSettings()" disabled>Save Settings</button>
+      </div>
+
+      <!-- Ticker count -->
+      <div class="setting-group">
+        <div class="setting-label">Ticker — Recent Votes Count</div>
+        <div class="setting-desc">How many of the most recent votes rotate through the ticker at the bottom of the TV display.</div>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="stepTicker(-5)">−</button>
+          <div class="stepper-val" id="ticker-count-val" style="width:56px">20</div>
+          <button class="stepper-btn" onclick="stepTicker(5)">+</button>
+        </div>
+      </div>
+
+      <!-- Ticker speed -->
+      <div class="setting-group">
+        <div class="setting-label">Ticker — Scroll Speed</div>
+        <div class="setting-desc">How fast the recent activity ticker scrolls across the bottom of the TV display.</div>
+        <select class="speed-select" id="ticker-speed" onchange="settingsDirty()">
+          <option value="slow">🐢 Slow</option>
+          <option value="normal" selected>🚶 Normal</option>
+          <option value="fast">🚀 Fast</option>
+        </select>
+      </div>
+
+      <!-- Ticker template — full width -->
+      <div class="setting-group template-section">
+        <div class="setting-label">Ticker — Display Template</div>
+        <div class="setting-desc">
+          Customize how each vote appears in the ticker. Use the variable chips below to insert dynamic values.
+          You can type any text or emoji freely around them.
+        </div>
+
+        <!-- Variable reference chips — click to insert -->
+        <div class="var-chips">
+          <span class="var-chip-label">Insert variable:</span>
+          <span class="var-chip" onclick="insertVar('{gender_emoji}')" title="🎀 for girl, 🐋 for boy">{gender_emoji}</span>
+          <span class="var-chip" onclick="insertVar('{voter}')"       title="Voter's first name + last initial">{voter}</span>
+          <span class="var-chip" onclick="insertVar('{name}')"        title="The baby name that was voted for">{name}</span>
+        </div>
+
+        <textarea class="template-input" id="ticker-template" rows="2" maxlength="200" oninput="onTemplateInput()" placeholder="{gender_emoji} {voter} → {name}"></textarea>
+
+        <!-- Live preview using fake data -->
+        <div class="template-preview-label">Live preview</div>
+        <div class="template-preview" id="template-preview"></div>
+
+        <!-- Usage guide -->
+        <div style="margin-top:0.8rem;padding:0.8rem;background:var(--surface3);border-radius:8px;font-size:0.8rem;color:var(--muted);line-height:1.7;">
+          <strong style="color:var(--text);display:block;margin-bottom:0.3rem;">Variable reference</strong>
+          <code style="color:var(--gold)">{gender_emoji}</code> — 🎀 for girl names, 🐋 for boy names<br>
+          <code style="color:var(--gold)">{voter}</code> — Voter's name as entered at sign-in (e.g. <em>Priya M.</em>)<br>
+          <code style="color:var(--gold)">{name}</code> — The baby name they voted for (e.g. <em>Ella</em>)<br>
+          <span style="margin-top:0.4rem;display:block;">You can use any emoji or punctuation freely. Examples:</span>
+          <code style="color:var(--text);display:block;margin-top:0.3rem">{gender_emoji} {voter} → {name}</code>
+          <code style="color:var(--text);display:block">{voter} loves {name} {gender_emoji}</code>
+          <code style="color:var(--text);display:block">{name} ✨ nominated by {voter}</code>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button class="btn btn-primary save-btn" id="save-btn" onclick="saveSettings()" disabled>Save Settings</button>
       </div>
 
     </div>
   </div>
 
-  <!-- Pending approval queue (only shown when there are pending names OR moderation is on) -->
+  <!-- Pending queue -->
   <div class="pending-panel" id="pending-panel" style="display:none">
     <div class="pending-header">
       <span>⏳</span>
@@ -250,7 +312,7 @@
   </div>
 
   <!-- Vote log -->
-  <div class="panel votes-panel">
+  <div class="panel">
     <div class="panel-header"><span>🗳️</span><span class="panel-title">Vote Log</span><span class="panel-badge" id="vote-log-badge">0</span></div>
     <div class="filter-row">
       <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
@@ -267,200 +329,211 @@
 
 </div>
 
-<!-- Modal -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
     <div class="modal-icon">⚠️</div>
     <div class="modal-title" id="modal-title">Are you sure?</div>
-    <div class="modal-sub" id="modal-sub">This action cannot be undone.</div>
+    <div class="modal-sub" id="modal-sub">This cannot be undone.</div>
     <div class="modal-btns">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger" id="modal-confirm-btn">Confirm</button>
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const urlParts = window.location.pathname.split('-');
-const SECRET = urlParts[urlParts.length - 1];
+const urlParts=window.location.pathname.split('-');
+const SECRET=urlParts[urlParts.length-1];
 
-let allVotes = [], allNames = [], pendingNames = [], voteFilter = 'all';
-let currentSettings = { moderationEnabled: false, leaderboardCount: 5 };
-let dirty = false;
+let allVotes=[],allNames=[],pendingNames=[],voteFilter='all';
+let currentSettings={moderationEnabled:false,leaderboardCount:5,tickerCount:20,tickerTemplate:'{gender_emoji} {voter} → {name}',tickerSpeed:'normal'};
+let countVal=5,tickerCountVal=20;
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg, type='success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.className = `toast show ${type}`;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+function showToast(msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`toast show ${type}`;
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000);
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
-function showModal(title, sub, onConfirm) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-sub').textContent = sub;
+function showModal(title,sub,onConfirm){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-sub').textContent=sub;
   document.getElementById('modal-bg').classList.add('show');
-  document.getElementById('modal-confirm-btn').onclick = () => { closeModal(); onConfirm(); };
+  document.getElementById('modal-confirm-btn').onclick=()=>{closeModal();onConfirm();};
 }
-function closeModal() { document.getElementById('modal-bg').classList.remove('show'); }
-document.getElementById('modal-bg').addEventListener('click', e => { if (e.target === document.getElementById('modal-bg')) closeModal(); });
+function closeModal(){document.getElementById('modal-bg').classList.remove('show');}
+document.getElementById('modal-bg').addEventListener('click',e=>{if(e.target===document.getElementById('modal-bg'))closeModal();});
 
-// ── Settings panel toggle ─────────────────────────────────────────────────────
-function toggleSettings() {
-  const body = document.getElementById('settings-body');
-  const chevron = document.getElementById('settings-chevron');
-  body.classList.toggle('open');
-  chevron.classList.toggle('open');
-}
-
-// ── Settings controls ─────────────────────────────────────────────────────────
-function settingsDirty() {
-  dirty = true;
-  document.getElementById('save-btn').disabled = false;
-  const checked = document.getElementById('moderation-toggle').checked;
-  document.getElementById('moderation-label').textContent = checked ? 'On — names need approval' : 'Off — names publish instantly';
+// ── Settings panel ────────────────────────────────────────────────────────────
+function toggleSettings(){
+  const body=document.getElementById('settings-body');
+  const chevron=document.getElementById('settings-chevron');
+  body.classList.toggle('open');chevron.classList.toggle('open');
 }
 
-let countVal = 5;
-function stepCount(delta) {
-  countVal = Math.max(1, Math.min(10, countVal + delta));
-  document.getElementById('count-val').textContent = countVal;
+function settingsDirty(){
+  document.getElementById('save-btn').disabled=false;
+  const checked=document.getElementById('moderation-toggle').checked;
+  document.getElementById('moderation-label').textContent=checked?'On — names need approval':'Off — names publish instantly';
+}
+
+function stepCount(d){countVal=Math.max(1,Math.min(10,countVal+d));document.getElementById('count-val').textContent=countVal;settingsDirty();}
+function stepTicker(d){tickerCountVal=Math.max(5,Math.min(50,tickerCountVal+d));document.getElementById('ticker-count-val').textContent=tickerCountVal;settingsDirty();}
+
+// ── Template preview ──────────────────────────────────────────────────────────
+const PREVIEW_VOTE={voterName:'Priya M.',nameName:'Ella',nameGender:'girl'};
+
+function renderTemplatePreview(template){
+  const genderEmoji=PREVIEW_VOTE.nameGender==='girl'?'🎀':'🐋';
+  return template
+    .replace(/\{gender_emoji\}/g,genderEmoji)
+    .replace(/\{voter\}/g,`<span class="t-voter">${PREVIEW_VOTE.voterName}</span>`)
+    .replace(/\{name\}/g,`<span class="t-name">${PREVIEW_VOTE.nameName}</span>`);
+}
+
+function onTemplateInput(){
   settingsDirty();
+  const template=document.getElementById('ticker-template').value||'{gender_emoji} {voter} → {name}';
+  document.getElementById('template-preview').innerHTML=renderTemplatePreview(template);
 }
 
-async function saveSettings() {
-  const moderationEnabled = document.getElementById('moderation-toggle').checked;
-  const res = await fetch(`/api/admin/${SECRET}/settings`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ moderationEnabled, leaderboardCount: countVal })
+// Insert variable at cursor position in textarea
+function insertVar(varStr){
+  const ta=document.getElementById('ticker-template');
+  const start=ta.selectionStart,end=ta.selectionEnd;
+  ta.value=ta.value.slice(0,start)+varStr+ta.value.slice(end);
+  ta.selectionStart=ta.selectionEnd=start+varStr.length;
+  ta.focus();
+  onTemplateInput();
+}
+
+function applySettings(s){
+  currentSettings=s;
+  countVal=s.leaderboardCount;
+  tickerCountVal=s.tickerCount||20;
+  document.getElementById('count-val').textContent=s.leaderboardCount;
+  document.getElementById('ticker-count-val').textContent=tickerCountVal;
+  document.getElementById('moderation-toggle').checked=s.moderationEnabled;
+  document.getElementById('moderation-label').textContent=s.moderationEnabled?'On — names need approval':'Off — names publish instantly';
+  document.getElementById('ticker-speed').value=s.tickerSpeed||'normal';
+  const tmpl=s.tickerTemplate||'{gender_emoji} {voter} → {name}';
+  document.getElementById('ticker-template').value=tmpl;
+  document.getElementById('template-preview').innerHTML=renderTemplatePreview(tmpl);
+}
+
+async function saveSettings(){
+  const res=await fetch(`/api/admin/${SECRET}/settings`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      moderationEnabled:document.getElementById('moderation-toggle').checked,
+      leaderboardCount:countVal,
+      tickerCount:tickerCountVal,
+      tickerTemplate:document.getElementById('ticker-template').value.trim()||'{gender_emoji} {voter} → {name}',
+      tickerSpeed:document.getElementById('ticker-speed').value,
+    })
   });
-  if (res.ok) {
-    currentSettings = await res.json();
-    dirty = false;
-    document.getElementById('save-btn').disabled = true;
-    showToast('✓ Settings saved');
-  } else {
-    showToast('Failed to save settings', 'error');
-  }
+  if(res.ok){currentSettings=await res.json();document.getElementById('save-btn').disabled=true;showToast('✓ Settings saved');}
+  else showToast('Failed to save','error');
 }
 
-function applySettings(s) {
-  currentSettings = s;
-  countVal = s.leaderboardCount;
-  document.getElementById('count-val').textContent = s.leaderboardCount;
-  const toggle = document.getElementById('moderation-toggle');
-  toggle.checked = s.moderationEnabled;
-  document.getElementById('moderation-label').textContent = s.moderationEnabled ? 'On — names need approval' : 'Off — names publish instantly';
-}
-
-// ── Load all data ─────────────────────────────────────────────────────────────
-async function loadAll() {
-  const [namesRes, votesRes, pendingRes, settingsRes] = await Promise.all([
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function loadAll(){
+  const[namesRes,votesRes,pendingRes,settingsRes]=await Promise.all([
     fetch('/api/names'),
     fetch(`/api/admin/${SECRET}/votes`),
     fetch(`/api/admin/${SECRET}/pending`),
-    fetch(`/api/admin/${SECRET}/settings`)
+    fetch(`/api/admin/${SECRET}/settings`),
   ]);
-  allNames    = await namesRes.json();
-  allVotes    = await votesRes.json();
-  pendingNames = await pendingRes.json();
+  allNames=await namesRes.json();
+  allVotes=await votesRes.json();
+  pendingNames=await pendingRes.json();
   applySettings(await settingsRes.json());
   render();
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function render() {
-  const girls   = allNames.filter(n => n.gender === 'girl').sort((a,b) => b.votes - a.votes);
-  const boys    = allNames.filter(n => n.gender === 'boy' ).sort((a,b) => b.votes - a.votes);
-  const girlVotes = girls.reduce((s,n) => s+n.votes, 0);
-  const boyVotes  = boys.reduce((s,n)  => s+n.votes, 0);
-  const uniqueDevices = new Set(allVotes.map(v => v.deviceId)).size;
-
-  document.getElementById('stat-total').textContent     = girlVotes + boyVotes;
-  document.getElementById('stat-girl').textContent      = girlVotes;
-  document.getElementById('stat-boy').textContent       = boyVotes;
-  document.getElementById('stat-girl-names').textContent = girls.length;
-  document.getElementById('stat-boy-names').textContent  = boys.length;
-  document.getElementById('stat-voters').textContent    = uniqueDevices;
-  document.getElementById('stat-pending').textContent   = pendingNames.length;
-
-  document.getElementById('girl-badge').textContent = girls.length;
-  document.getElementById('boy-badge').textContent  = boys.length;
-
-  renderNameList('girl-names-list', girls, 'girl');
-  renderNameList('boy-names-list',  boys,  'boy');
+function render(){
+  const girls=allNames.filter(n=>n.gender==='girl').sort((a,b)=>b.votes-a.votes);
+  const boys=allNames.filter(n=>n.gender==='boy').sort((a,b)=>b.votes-a.votes);
+  const girlVotes=girls.reduce((s,n)=>s+n.votes,0);
+  const boyVotes=boys.reduce((s,n)=>s+n.votes,0);
+  const uniqueDevices=new Set(allVotes.map(v=>v.deviceId)).size;
+  document.getElementById('stat-total').textContent=girlVotes+boyVotes;
+  document.getElementById('stat-girl').textContent=girlVotes;
+  document.getElementById('stat-boy').textContent=boyVotes;
+  document.getElementById('stat-girl-names').textContent=girls.length;
+  document.getElementById('stat-boy-names').textContent=boys.length;
+  document.getElementById('stat-voters').textContent=uniqueDevices;
+  document.getElementById('stat-pending').textContent=pendingNames.length;
+  document.getElementById('girl-badge').textContent=girls.length;
+  document.getElementById('boy-badge').textContent=boys.length;
+  renderNameList('girl-names-list',girls,'girl');
+  renderNameList('boy-names-list',boys,'boy');
   renderPending();
   renderVoteLog();
 }
 
-function renderNameList(id, names, gender) {
-  const el = document.getElementById(id);
-  if (!names.length) { el.innerHTML = `<div class="name-row-empty">No names yet</div>`; return; }
-  el.innerHTML = names.map((n, i) => `
+function renderNameList(id,names,gender){
+  const el=document.getElementById(id);
+  if(!names.length){el.innerHTML=`<div class="name-row-empty">No names yet</div>`;return;}
+  el.innerHTML=names.map((n,i)=>`
     <div class="name-row">
       <span class="rank-num">${i+1}</span>
       <div class="name-dot ${gender}"></div>
       <span class="row-name">${n.name}</span>
       <span class="row-votes">${n.votes} vote${n.votes!==1?'s':''}</span>
-      <button class="row-delete" onclick="deleteName('${n._id}','${n.name.replace(/'/g,"\\'")}')" title="Delete">✕</button>
+      <button class="row-delete" onclick="deleteName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✕</button>
     </div>`).join('');
 }
 
-function renderPending() {
-  const panel = document.getElementById('pending-panel');
-  const list  = document.getElementById('pending-list');
-  const badge = document.getElementById('pending-count');
-  const approveAllBtn = document.getElementById('approve-all-btn');
-
-  // Show panel if moderation is on OR there are pending names
-  const show = currentSettings.moderationEnabled || pendingNames.length > 0;
-  panel.style.display = show ? '' : 'none';
-  badge.textContent = pendingNames.length;
-  approveAllBtn.style.display = pendingNames.length > 1 ? '' : 'none';
-
-  if (!pendingNames.length) {
-    list.innerHTML = `<div class="pending-empty">No names awaiting approval ✓</div>`;
-    return;
-  }
-
-  list.innerHTML = pendingNames.map(n => {
-    const dt = new Date(n.createdAt);
-    const timeStr = dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    return `
-      <div class="pending-item">
-        <div class="pending-dot ${n.gender}"></div>
-        <div class="pending-name">${n.name}</div>
-        <div class="pending-meta">${n.gender} · ${timeStr}</div>
-        <div class="pending-actions">
-          <button class="btn btn-success btn-sm" onclick="approveName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✓ Approve</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✕ Reject</button>
-        </div>
-      </div>`;
+function renderPending(){
+  const panel=document.getElementById('pending-panel');
+  const list=document.getElementById('pending-list');
+  const badge=document.getElementById('pending-count');
+  const approveAllBtn=document.getElementById('approve-all-btn');
+  const show=currentSettings.moderationEnabled||pendingNames.length>0;
+  panel.style.display=show?'':'none';
+  badge.textContent=pendingNames.length;
+  approveAllBtn.style.display=pendingNames.length>1?'':'none';
+  if(!pendingNames.length){list.innerHTML=`<div class="pending-empty">No names awaiting approval ✓</div>`;return;}
+  list.innerHTML=pendingNames.map(n=>{
+    const dt=new Date(n.createdAt);
+    const timeStr=dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return `<div class="pending-item">
+      <div class="pending-dot ${n.gender}"></div>
+      <div class="pending-name">${n.name}</div>
+      <div class="pending-meta">${n.gender} · ${timeStr}</div>
+      <div class="pending-actions">
+        <button class="btn btn-success btn-sm" onclick="approveName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✓ Approve</button>
+        <button class="btn btn-danger btn-sm"  onclick="rejectName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✕ Reject</button>
+      </div>
+    </div>`;
   }).join('');
 }
 
-function setFilter(f, btn) {
-  voteFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+function setFilter(f,btn){
+  voteFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderVoteLog();
 }
 
-function renderVoteLog() {
-  const filtered = voteFilter === 'all' ? allVotes : allVotes.filter(v => v.nameGender === voteFilter);
-  document.getElementById('vote-log-badge').textContent = filtered.length;
-  const tbody = document.getElementById('vote-log');
-  if (!filtered.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="4">No votes yet</td></tr>`; return; }
-  tbody.innerHTML = filtered.map(v => {
-    const dt = new Date(v.votedAt);
-    const timeStr = dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    const hasName = v.voterName && v.voterName.trim();
+function renderVoteLog(){
+  const filtered=voteFilter==='all'?allVotes:allVotes.filter(v=>v.nameGender===voteFilter);
+  document.getElementById('vote-log-badge').textContent=filtered.length;
+  const tbody=document.getElementById('vote-log');
+  if(!filtered.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="4">No votes yet</td></tr>`;return;}
+  tbody.innerHTML=filtered.map(v=>{
+    const dt=new Date(v.votedAt);
+    const timeStr=dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const hasName=v.voterName&&v.voterName.trim();
     return `<tr>
       <td><div class="voter-name-cell">
-        <div class="voter-display-name ${hasName?'':'anon'}">${hasName ? v.voterName : 'Anonymous'}</div>
+        <div class="voter-display-name ${hasName?'':'anon'}">${hasName?v.voterName:'Anonymous'}</div>
         <div class="device-id" title="${v.deviceId}">${v.deviceId}</div>
       </div></td>
       <td style="font-weight:600">${v.nameName}</td>
@@ -471,59 +544,52 @@ function renderVoteLog() {
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
-async function approveName(id, name) {
-  const res = await fetch(`/api/admin/${SECRET}/names/${id}/approve`, { method: 'POST' });
-  if (res.ok) { showToast(`✓ "${name}" approved`); loadAll(); }
-  else showToast('Approval failed', 'error');
+async function approveName(id,name){
+  const res=await fetch(`/api/admin/${SECRET}/names/${id}/approve`,{method:'POST'});
+  if(res.ok){showToast(`✓ "${name}" approved`);loadAll();}
+  else showToast('Approval failed','error');
 }
-
-async function rejectName(id, name) {
-  showModal(`Reject "${name}"?`, 'This will permanently delete the name suggestion.', async () => {
-    const res = await fetch(`/api/admin/${SECRET}/names/${id}`, { method: 'DELETE' });
-    if (res.ok) { showToast(`"${name}" rejected`, 'info'); loadAll(); }
-    else showToast('Failed to reject', 'error');
+async function rejectName(id,name){
+  showModal(`Reject "${name}"?`,'This will permanently delete the name suggestion.',async()=>{
+    const res=await fetch(`/api/admin/${SECRET}/names/${id}`,{method:'DELETE'});
+    if(res.ok){showToast(`"${name}" rejected`,'info');loadAll();}
+    else showToast('Failed to reject','error');
   });
 }
-
-async function approveAll() {
-  showModal('Approve all pending names?', `This will publish all ${pendingNames.length} pending names to the leaderboard.`, async () => {
-    await Promise.all(pendingNames.map(n => fetch(`/api/admin/${SECRET}/names/${n._id}/approve`, { method: 'POST' })));
-    showToast(`✓ All names approved`);
-    loadAll();
+async function approveAll(){
+  showModal('Approve all pending names?',`This will publish all ${pendingNames.length} pending names.`,async()=>{
+    await Promise.all(pendingNames.map(n=>fetch(`/api/admin/${SECRET}/names/${n._id}/approve`,{method:'POST'})));
+    showToast('✓ All names approved');loadAll();
   });
 }
-
-function deleteName(id, name) {
-  showModal(`Delete "${name}"?`, 'This will also remove all votes for this name.', async () => {
-    const res = await fetch(`/api/admin/${SECRET}/names/${id}`, { method: 'DELETE' });
-    if (res.ok) { showToast(`"${name}" deleted`, 'info'); loadAll(); }
-    else showToast('Failed to delete', 'error');
+function deleteName(id,name){
+  showModal(`Delete "${name}"?`,'This will also remove all votes for this name.',async()=>{
+    const res=await fetch(`/api/admin/${SECRET}/names/${id}`,{method:'DELETE'});
+    if(res.ok){showToast(`"${name}" deleted`,'info');loadAll();}
+    else showToast('Failed to delete','error');
   });
 }
-
-function confirmReset() {
-  showModal('Reset Everything?', 'All names and votes will be permanently deleted. This cannot be undone!', async () => {
-    const res = await fetch(`/api/admin/${SECRET}/reset`, { method: 'POST' });
-    if (res.ok) { showToast('✓ All data reset'); loadAll(); }
-    else showToast('Reset failed', 'error');
+function confirmReset(){
+  showModal('Reset Everything?','All names and votes will be permanently deleted. This cannot be undone!',async()=>{
+    const res=await fetch(`/api/admin/${SECRET}/reset`,{method:'POST'});
+    if(res.ok){showToast('✓ All data reset');loadAll();}
+    else showToast('Reset failed','error');
   });
 }
-
-function exportCsv() { window.open(`/api/admin/${SECRET}/export`, '_blank'); }
+function exportCsv(){window.open(`/api/admin/${SECRET}/export`,'_blank');}
 
 // ── SSE ───────────────────────────────────────────────────────────────────────
-function connectSSE() {
-  const es = new EventSource('/api/events');
-  es.addEventListener('update',   () => loadAll());
-  es.addEventListener('pending',  () => loadAll()); // new pending name submitted
-  es.addEventListener('settings', e  => applySettings(JSON.parse(e.data)));
-  es.onerror = () => { es.close(); setTimeout(connectSSE, 5000); };
+function connectSSE(){
+  const es=new EventSource('/api/events');
+  es.addEventListener('update',  ()=>loadAll());
+  es.addEventListener('pending', ()=>loadAll());
+  es.addEventListener('settings',e=>applySettings(JSON.parse(e.data)));
+  es.onerror=()=>{es.close();setTimeout(connectSSE,5000);};
 }
 
 loadAll();
 connectSSE();
-// Open settings by default
-toggleSettings();
+toggleSettings(); // open by default
 </script>
 </body>
 </html>
