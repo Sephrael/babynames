@@ -84,7 +84,8 @@
     position:absolute;
     right:clamp(0.6rem,1.5vw,1.5rem);
     top:50%;transform:translateY(-50%);
-    display:block;text-decoration:none;
+    display:flex;flex-direction:column;align-items:center;gap:0.35rem;
+    text-decoration:none;
   }
   .qr-image{
     width:clamp(68px,9vw,110px);height:clamp(68px,9vw,110px);
@@ -93,7 +94,18 @@
     box-shadow:0 3px 16px rgba(0,0,0,0.07);
     display:block;transition:transform 0.2s,box-shadow 0.2s;
   }
+  .qr-text {
+    font-size: clamp(0.48rem, 0.8vw, 0.65rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dark);
+    opacity: 0.5;
+    transition: opacity 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
   .header-qr:hover .qr-image{transform:scale(1.06);box-shadow:0 6px 24px rgba(0,0,0,0.1);}
+  .header-qr:hover .qr-text{opacity:1;color:var(--gold);}
 
   /* On small screens: show QR but smaller, keep symmetric padding so title stays centered */
   @media(max-width:559px){
@@ -232,6 +244,7 @@
     <!-- QR: absolute right, vertically centered, hidden below 560px -->
     <a class="header-qr" id="qr-link" href="/vote" target="_blank" title="Tap to vote">
       <img class="qr-image" id="qr-img" src="" alt="Scan to vote" />
+      <span class="qr-text">Click to Play!</span>
     </a>
   </header>
 
