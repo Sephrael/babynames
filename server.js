@@ -151,6 +151,12 @@ app.post('/api/names', async (req, res) => {
     submittedBy: resolvedSubmitter, submittedByDeviceId: deviceId || null,
     createdAt: new Date()
   });
+  // Log the nomination in the activity log
+  await votesDb.insert({
+    action: 'nominate', nameId: doc._id, nameName: trimmed, nameGender: gender,
+    voterName: resolvedSubmitter || 'Anonymous', deviceId: deviceId || 'unknown',
+    votedAt: new Date()
+  });
   if (approved) broadcast('update', { ts: Date.now() });
   else          broadcast('pending', { ts: Date.now() });
   res.status(approved ? 200 : 202).json({ ...doc, pending: !approved });

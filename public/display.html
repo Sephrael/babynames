@@ -140,12 +140,11 @@
   .name-card.rank-1::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent);animation:shimmer 3s ease-in-out infinite;pointer-events:none;}
   @keyframes shimmer{0%{transform:translateX(-100%)}60%{transform:translateX(100%)}100%{transform:translateX(100%)}}
   .rank-badge{font-family:'Playfair Display',serif;font-weight:900;width:clamp(1.6rem,2.2vw,2.3rem);height:clamp(1.6rem,2.2vw,2.3rem);display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;font-size:clamp(0.7rem,0.92vw,0.95rem);}
-  .name-card.rank-1 .rank-badge{background:linear-gradient(135deg,#f7e06b,#d4a853);color:#5a3e00;}
+  .name-card.rank-1 .rank-badge{background:linear-gradient(135deg,#f7e06b,#d4a853);color:#5a3e00;animation:crown-bob 2s ease-in-out infinite;}
   .name-card.rank-2 .rank-badge{background:linear-gradient(135deg,#e8e8e8,#b0b0b0);color:#3a3a3a;}
   .name-card.rank-3 .rank-badge{background:linear-gradient(135deg,#f5c89a,#c87941);color:#5a2e00;}
   .name-card:not(.rank-1):not(.rank-2):not(.rank-3) .rank-badge{background:rgba(255,255,255,0.5);color:var(--text-dark);opacity:0.45;}
-  .crown{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:clamp(0.8rem,1.2vw,1.1rem);animation:crown-bob 2s ease-in-out infinite;pointer-events:none;}
-  @keyframes crown-bob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-5deg)}50%{transform:translateX(-50%) translateY(-4px) rotate(5deg)}}
+  @keyframes crown-bob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-3px) rotate(5deg)}}
   .name-text{flex:1;font-family:'Playfair Display',serif;font-size:var(--name-font);font-weight:700;color:var(--text-dark);letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .vote-section{display:flex;flex-direction:column;align-items:flex-end;gap:0.15rem;flex-shrink:0;}
   .vote-count{font-family:'Playfair Display',serif;font-size:var(--count-font);font-weight:900;line-height:1;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),color 0.3s;}
@@ -290,7 +289,6 @@ function renderCol(colId,names,gender,prevNames){
     const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
     const rankLabel=i===0?'👑':`${i+1}`;
     return `<div class="name-card ${gender} ${rankClass}" data-id="${name._id}" style="transition-delay:${i*.07}s">
-      ${i===0?'<div class="crown">👑</div>':''}
       <div class="rank-badge">${rankLabel}</div>
       <div class="name-text">${name.name}</div>
       <div class="vote-section"><div class="vote-count" id="vc-${name._id}">${name.votes}</div><div class="vote-label">votes</div></div>
