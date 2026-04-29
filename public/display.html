@@ -28,7 +28,7 @@
   #particles,#confetti-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;}
   #confetti-canvas{z-index:100;}
 
-  .page{position:relative;z-index:5;display:grid;grid-template-rows:auto 1fr auto;min-height:100vh;}
+  .page{position:relative;z-index:5;display:grid;grid-template-rows:auto 1fr auto;min-height:100vh;width:100%;max-width:100vw;overflow:hidden;}
   @media(min-width:900px){.page{height:100vh;}}
 
   /* ════════════════════════════════════════════════════
@@ -175,7 +175,7 @@
   @media(max-width:700px){.footer-band{display:none;}}
 
   .ticker-label{font-size:0.6rem;font-weight:500;letter-spacing:0.24em;text-transform:uppercase;color:var(--text-dark);opacity:0.3;white-space:nowrap;flex-shrink:0;}
-  .ticker-wrap{flex:1;overflow:hidden;}
+  .ticker-wrap{flex:1;min-width:0;overflow:hidden;}
   .ticker-inner{display:flex;white-space:nowrap;gap:3rem;animation:ticker-scroll var(--ticker-duration) linear infinite;}
   .ticker-item{font-size:clamp(0.84rem,1.05vw,0.98rem);font-weight:500;color:var(--text-dark);opacity:0.62;display:inline-flex;align-items:center;gap:0.35rem;flex-shrink:0;}
   .ticker-item .t-voter{font-weight:700;}
@@ -233,7 +233,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false">
 // Particles
 const pCanvas=document.getElementById('particles'),pCtx=pCanvas.getContext('2d');
 function resizeP(){pCanvas.width=window.innerWidth;pCanvas.height=window.innerHeight;}
