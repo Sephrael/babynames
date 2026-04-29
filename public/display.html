@@ -11,14 +11,18 @@
   :root{
     --pink:#f9b8c8;--pink-deep:#e8849a;--pink-pale:#fde8ee;--pink-mid:#f4a0b8;
     --blue:#a8d4f5;--blue-deep:#6aaee0;--blue-pale:#ddf0ff;--blue-mid:#8ec4ef;
-    --neutral:#faf8f5;--neutral-border:rgba(212,168,83,0.18);
     --gold:#d4a853;--text-dark:#3a3250;
+    /* Theme-controlled colors (overridden by JS from settings) */
+    --theme-page-bg:#C5D1B8;
+    --theme-card-bg:#A8B898;
+    --theme-border:rgba(156,175,136,0.3);
+    --neutral:var(--theme-page-bg);--neutral-border:var(--theme-border);
     --name-font:clamp(1.35rem,2.2vw,1.85rem);
     --count-font:clamp(1.6rem,2.6vw,2.2rem);
     --card-pad-v:1rem;--card-gap:0.85rem;
     --ticker-duration:32s;
   }
-  html,body{width:100%;height:100%;background:var(--neutral);font-family:'DM Sans',sans-serif;}
+  html,body{width:100%;height:100%;background:var(--theme-page-bg);font-family:'DM Sans',sans-serif;}
   @media(min-width:900px){body{overflow:hidden;}}
 
   #particles,#confetti-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;}
@@ -34,9 +38,9 @@
      Side padding on header-text creates space for the QR.
   ════════════════════════════════════════════════════ */
   .header-band{
-    background:var(--neutral);
-    border-bottom:1.5px solid var(--neutral-border);
-    box-shadow:0 2px 24px rgba(212,168,83,0.07);
+    background:var(--theme-page-bg);
+    border-bottom:1.5px solid var(--theme-border);
+    box-shadow:0 2px 24px rgba(0,0,0,0.06);
     position:relative;
     padding:1.2rem clamp(1rem,2vw,2rem) 1rem;
     text-align:center;
@@ -83,12 +87,12 @@
   }
   .qr-image{
     width:clamp(68px,9vw,110px);height:clamp(68px,9vw,110px);
-    border-radius:10px;background:white;padding:5px;
-    border:1.5px solid var(--neutral-border);
+    border-radius:10px;background:var(--theme-card-bg);padding:5px;
+    border:1.5px solid var(--theme-border);
     box-shadow:0 3px 16px rgba(0,0,0,0.07);
     display:block;transition:transform 0.2s,box-shadow 0.2s;
   }
-  .header-qr:hover .qr-image{transform:scale(1.06);box-shadow:0 6px 24px rgba(212,168,83,0.18);}
+  .header-qr:hover .qr-image{transform:scale(1.06);box-shadow:0 6px 24px rgba(0,0,0,0.1);}
 
   /* On small screens: show QR but smaller, keep symmetric padding so title stays centered */
   @media(max-width:559px){
@@ -162,8 +166,8 @@
      Hidden on small screens to keep layout clean
   ════════════════════════════════════════════════════ */
   .footer-band{
-    background:var(--neutral);border-top:1.5px solid var(--neutral-border);
-    box-shadow:0 -2px 20px rgba(212,168,83,0.06);
+    background:var(--theme-page-bg);border-top:1.5px solid var(--theme-border);
+    box-shadow:0 -2px 20px rgba(0,0,0,0.04);
     display:flex;align-items:center;
     padding:0.55rem clamp(1rem,2.5vw,2.5rem);gap:1rem;min-height:0;
   }
@@ -179,7 +183,7 @@
   .ticker-item .t-name{font-family:'Playfair Display',serif;font-style:italic;}
   @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-  .toast{position:fixed;bottom:4rem;left:50%;transform:translateX(-50%) translateY(3rem);background:white;border-radius:50px;padding:0.65rem 1.7rem;font-size:0.88rem;font-weight:600;color:var(--text-dark);box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:200;opacity:0;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s ease;pointer-events:none;white-space:nowrap;border:1px solid var(--neutral-border);}
+  .toast{position:fixed;bottom:4rem;left:50%;transform:translateX(-50%) translateY(3rem);background:white;border-radius:50px;padding:0.65rem 1.7rem;font-size:0.88rem;font-weight:600;color:var(--text-dark);box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:200;opacity:0;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s ease;pointer-events:none;white-space:nowrap;border:1px solid var(--theme-border);}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
@@ -335,6 +339,27 @@ async function loadSettings(){
   applySizeForCount(leaderboardCount);
   tickerSettings={count:s.tickerCount||20,template:s.tickerTemplate||'{gender_emoji} {voter} → {name}',speed:s.tickerSpeed||'normal'};
   applyTickerSpeed(tickerSettings.speed);
+  applyTheme(s);
+}
+
+// Theme presets
+const THEME_PRESETS = {
+  classic: { pageBg:'#faf8f5', cardBg:'#ffffff', accent:'#d4a853' },
+  sage:    { pageBg:'#C5D1B8', cardBg:'#A8B898', accent:'#9CAF88' },
+};
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function applyTheme(settings) {
+  const preset = THEME_PRESETS[settings.theme];
+  const colors = preset || { pageBg: settings.themePageBg, cardBg: settings.themeCardBg, accent: settings.themeAccent };
+  const r = document.documentElement.style;
+  r.setProperty('--theme-page-bg', colors.pageBg);
+  r.setProperty('--theme-card-bg', colors.cardBg);
+  r.setProperty('--theme-border', hexToRgba(colors.accent, 0.3));
 }
 
 async function loadQR(){
@@ -353,6 +378,7 @@ function connectSSE(){
     applySizeForCount(leaderboardCount);
     tickerSettings={count:s.tickerCount||20,template:s.tickerTemplate||'{gender_emoji} {voter} → {name}',speed:s.tickerSpeed||'normal'};
     applyTickerSpeed(tickerSettings.speed);
+    applyTheme(s);
     fetchAndRender(true);updateTicker();
   });
   es.onerror=()=>{es.close();setTimeout(connectSSE,3000);};

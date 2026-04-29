@@ -95,6 +95,29 @@
   .settings-footer{grid-column:1/-1;display:flex;justify-content:flex-end;padding-top:0.5rem;border-top:1px solid var(--border);}
   .save-btn{}
 
+  /* Theme picker */
+  .theme-section{grid-column:1/-1;}
+  .theme-presets{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .theme-preset-btn{
+    background:var(--surface2);border:2px solid var(--border2);border-radius:10px;
+    padding:0.6rem 1rem;cursor:pointer;display:flex;align-items:center;gap:0.6rem;
+    font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;color:var(--text);
+    transition:all 0.15s;flex:1;min-width:140px;justify-content:center;
+  }
+  .theme-preset-btn:hover{border-color:var(--gold);}
+  .theme-preset-btn.active{border-color:var(--gold);background:rgba(212,168,83,0.08);}
+  .theme-swatches{display:flex;gap:3px;}
+  .theme-swatch{width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);}
+  .theme-custom-fields{display:none;gap:0.8rem;grid-template-columns:1fr 1fr 1fr;margin-top:0.8rem;}
+  .theme-custom-fields.show{display:grid;}
+  @media(max-width:600px){.theme-custom-fields.show{grid-template-columns:1fr;}}
+  .color-field{display:flex;flex-direction:column;gap:0.3rem;}
+  .color-field-label{font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+  .color-field-row{display:flex;align-items:center;gap:0.5rem;}
+  .color-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.88rem;padding:0.5rem 0.7rem;outline:none;transition:border-color 0.2s;text-transform:uppercase;}
+  .color-input:focus{border-color:var(--gold);}
+  .color-preview{width:32px;height:32px;border-radius:6px;border:1px solid var(--border2);flex-shrink:0;}
+
   /* ── PENDING ── */
   .pending-panel{background:var(--surface);border:1px solid rgba(224,160,48,0.25);border-radius:var(--radius);overflow:hidden;}
   .pending-header{padding:0.9rem 1.2rem;border-bottom:1px solid rgba(224,160,48,0.15);display:flex;align-items:center;gap:0.6rem;background:rgba(224,160,48,0.05);}
@@ -125,6 +148,7 @@
   .name-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
   .name-dot.girl{background:var(--pink);}.name-dot.boy{background:var(--blue);}
   .row-name{flex:1;font-weight:500;font-size:0.92rem;}
+  .row-nominated{font-size:0.72rem;color:var(--muted);font-style:italic;margin-top:0.1rem;}
   .row-votes{font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--gold);font-weight:500;}
   .row-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0.2rem 0.3rem;border-radius:4px;transition:color 0.15s,background 0.15s;line-height:1;}
   .row-delete:hover{color:var(--red);background:rgba(224,92,92,0.1);}
@@ -281,6 +305,61 @@
         </div>
       </div>
 
+      <!-- Color Theme -->
+      <div class="setting-group theme-section">
+        <div class="setting-label">Color Theme</div>
+        <div class="setting-desc">Choose a preset color scheme or define custom colors. Changes apply live to the vote and leaderboard pages.</div>
+        <div class="theme-presets">
+          <button class="theme-preset-btn" id="theme-btn-classic" onclick="selectTheme('classic')">
+            <div class="theme-swatches">
+              <div class="theme-swatch" style="background:#faf8f5"></div>
+              <div class="theme-swatch" style="background:#ffffff"></div>
+              <div class="theme-swatch" style="background:#d4a853"></div>
+            </div>
+            Classic
+          </button>
+          <button class="theme-preset-btn" id="theme-btn-sage" onclick="selectTheme('sage')">
+            <div class="theme-swatches">
+              <div class="theme-swatch" style="background:#C5D1B8"></div>
+              <div class="theme-swatch" style="background:#A8B898"></div>
+              <div class="theme-swatch" style="background:#9CAF88"></div>
+            </div>
+            Sage Green
+          </button>
+          <button class="theme-preset-btn" id="theme-btn-custom" onclick="selectTheme('custom')">
+            <div class="theme-swatches" id="custom-swatches">
+              <div class="theme-swatch" id="custom-sw-1" style="background:#C5D1B8"></div>
+              <div class="theme-swatch" id="custom-sw-2" style="background:#A8B898"></div>
+              <div class="theme-swatch" id="custom-sw-3" style="background:#9CAF88"></div>
+            </div>
+            Custom
+          </button>
+        </div>
+        <div class="theme-custom-fields" id="theme-custom-fields">
+          <div class="color-field">
+            <span class="color-field-label">Page Background</span>
+            <div class="color-field-row">
+              <input class="color-input" id="color-page-bg" type="text" maxlength="7" placeholder="#C5D1B8" oninput="onCustomColorInput()" />
+              <div class="color-preview" id="preview-page-bg"></div>
+            </div>
+          </div>
+          <div class="color-field">
+            <span class="color-field-label">Card / Accent Background</span>
+            <div class="color-field-row">
+              <input class="color-input" id="color-card-bg" type="text" maxlength="7" placeholder="#A8B898" oninput="onCustomColorInput()" />
+              <div class="color-preview" id="preview-card-bg"></div>
+            </div>
+          </div>
+          <div class="color-field">
+            <span class="color-field-label">Accent / Border Color</span>
+            <div class="color-field-row">
+              <input class="color-input" id="color-accent" type="text" maxlength="7" placeholder="#9CAF88" oninput="onCustomColorInput()" />
+              <div class="color-preview" id="preview-accent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="settings-footer">
         <button class="btn btn-primary save-btn" id="save-btn" onclick="saveSettings()" disabled>Save Settings</button>
       </div>
@@ -347,8 +426,8 @@ const urlParts=window.location.pathname.split('-');
 const SECRET=urlParts[urlParts.length-1];
 
 let allVotes=[],allNames=[],pendingNames=[],voteFilter='all';
-let currentSettings={moderationEnabled:false,leaderboardCount:5,tickerCount:20,tickerTemplate:'{gender_emoji} {voter} → {name}',tickerSpeed:'normal'};
-let countVal=5,tickerCountVal=20;
+let currentSettings={moderationEnabled:false,leaderboardCount:5,tickerCount:20,tickerTemplate:'{gender_emoji} {voter} → {name}',tickerSpeed:'normal',theme:'sage',themePageBg:'#C5D1B8',themeCardBg:'#A8B898',themeAccent:'#9CAF88'};
+let countVal=5,tickerCountVal=20,selectedTheme='sage';
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 let toastTimer;
@@ -423,18 +502,111 @@ function applySettings(s){
   const tmpl=s.tickerTemplate||'{gender_emoji} {voter} → {name}';
   document.getElementById('ticker-template').value=tmpl;
   document.getElementById('template-preview').innerHTML=renderTemplatePreview(tmpl);
+  // Theme
+  selectedTheme=s.theme||'sage';
+  applyThemeUI(s);
+}
+
+// ── Theme UI ───────────────────────────────────────────────────────────────────
+const THEME_PRESETS={
+  classic:{pageBg:'#FAF8F5',cardBg:'#FFFFFF',accent:'#D4A853'},
+  sage:   {pageBg:'#C5D1B8',cardBg:'#A8B898',accent:'#9CAF88'},
+};
+
+function selectTheme(theme){
+  selectedTheme=theme;
+  document.querySelectorAll('.theme-preset-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`theme-btn-${theme}`).classList.add('active');
+  const customFields=document.getElementById('theme-custom-fields');
+  if(theme==='custom'){
+    customFields.classList.add('show');
+    // Populate inputs from current custom values or last preset
+    const p=currentSettings;
+    if(!document.getElementById('color-page-bg').value){
+      document.getElementById('color-page-bg').value=p.themePageBg||'#C5D1B8';
+      document.getElementById('color-card-bg').value=p.themeCardBg||'#A8B898';
+      document.getElementById('color-accent').value=p.themeAccent||'#9CAF88';
+    }
+    onCustomColorInput();
+  } else {
+    customFields.classList.remove('show');
+  }
+  settingsDirty();
+}
+
+function onCustomColorInput(){
+  const validHex=/^#[0-9a-fA-F]{6}$/;
+  ['page-bg','card-bg','accent'].forEach(id=>{
+    const input=document.getElementById(`color-${id}`);
+    const preview=document.getElementById(`preview-${id}`);
+    const val=input.value;
+    if(validHex.test(val)){
+      preview.style.background=val;
+      input.style.borderColor='';
+    } else {
+      preview.style.background='transparent';
+      input.style.borderColor=val.length>0?'var(--red)':'';
+    }
+  });
+  // Update custom swatches in button
+  const sw1=document.getElementById('custom-sw-1');
+  const sw2=document.getElementById('custom-sw-2');
+  const sw3=document.getElementById('custom-sw-3');
+  const pgBg=document.getElementById('color-page-bg').value;
+  const cdBg=document.getElementById('color-card-bg').value;
+  const ac=document.getElementById('color-accent').value;
+  if(validHex.test(pgBg)) sw1.style.background=pgBg;
+  if(validHex.test(cdBg)) sw2.style.background=cdBg;
+  if(validHex.test(ac))   sw3.style.background=ac;
+  settingsDirty();
+}
+
+function applyThemeUI(s){
+  // Highlight the active preset button
+  document.querySelectorAll('.theme-preset-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById(`theme-btn-${s.theme||'sage'}`);
+  if(btn) btn.classList.add('active');
+  // Populate custom fields
+  document.getElementById('color-page-bg').value=s.themePageBg||'#C5D1B8';
+  document.getElementById('color-card-bg').value=s.themeCardBg||'#A8B898';
+  document.getElementById('color-accent').value=s.themeAccent||'#9CAF88';
+  // Show/hide custom fields
+  const customFields=document.getElementById('theme-custom-fields');
+  if((s.theme||'sage')==='custom') customFields.classList.add('show');
+  else customFields.classList.remove('show');
+  onCustomColorInput();
 }
 
 async function saveSettings(){
+  const body={
+    moderationEnabled:document.getElementById('moderation-toggle').checked,
+    leaderboardCount:countVal,
+    tickerCount:tickerCountVal,
+    tickerTemplate:document.getElementById('ticker-template').value.trim()||'{gender_emoji} {voter} → {name}',
+    tickerSpeed:document.getElementById('ticker-speed').value,
+    theme:selectedTheme,
+  };
+  // For custom theme, include the hex colors
+  if(selectedTheme==='custom'){
+    const pgBg=document.getElementById('color-page-bg').value;
+    const cdBg=document.getElementById('color-card-bg').value;
+    const ac=document.getElementById('color-accent').value;
+    const validHex=/^#[0-9a-fA-F]{6}$/;
+    if(validHex.test(pgBg)) body.themePageBg=pgBg.toUpperCase();
+    if(validHex.test(cdBg)) body.themeCardBg=cdBg.toUpperCase();
+    if(validHex.test(ac))   body.themeAccent=ac.toUpperCase();
+  } else {
+    // Store preset colors so they're available if switched to custom later
+    const preset=THEME_PRESETS[selectedTheme];
+    if(preset){
+      body.themePageBg=preset.pageBg;
+      body.themeCardBg=preset.cardBg;
+      body.themeAccent=preset.accent;
+    }
+  }
   const res=await fetch(`/api/admin/${SECRET}/settings`,{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      moderationEnabled:document.getElementById('moderation-toggle').checked,
-      leaderboardCount:countVal,
-      tickerCount:tickerCountVal,
-      tickerTemplate:document.getElementById('ticker-template').value.trim()||'{gender_emoji} {voter} → {name}',
-      tickerSpeed:document.getElementById('ticker-speed').value,
-    })
+    body:JSON.stringify(body)
   });
   if(res.ok){currentSettings=await res.json();document.getElementById('save-btn').disabled=true;showToast('✓ Settings saved');}
   else showToast('Failed to save','error');
@@ -443,12 +615,12 @@ async function saveSettings(){
 // ── Load data ─────────────────────────────────────────────────────────────────
 async function loadAll(){
   const[namesRes,votesRes,pendingRes,settingsRes]=await Promise.all([
-    fetch('/api/names'),
+    fetch(`/api/admin/${SECRET}/names`),
     fetch(`/api/admin/${SECRET}/votes`),
     fetch(`/api/admin/${SECRET}/pending`),
     fetch(`/api/admin/${SECRET}/settings`),
   ]);
-  allNames=await namesRes.json();
+  allNames=(await namesRes.json()).filter(n => n.approved);
   allVotes=await votesRes.json();
   pendingNames=await pendingRes.json();
   applySettings(await settingsRes.json());
@@ -480,14 +652,17 @@ function render(){
 function renderNameList(id,names,gender){
   const el=document.getElementById(id);
   if(!names.length){el.innerHTML=`<div class="name-row-empty">No names yet</div>`;return;}
-  el.innerHTML=names.map((n,i)=>`
+  el.innerHTML=names.map((n,i)=>{
+    const nom=n.submittedBy?`<div class="row-nominated">nominated by ${n.submittedBy}</div>`:'';
+    return `
     <div class="name-row">
       <span class="rank-num">${i+1}</span>
       <div class="name-dot ${gender}"></div>
-      <span class="row-name">${n.name}</span>
+      <div style="flex:1"><div class="row-name">${n.name}</div>${nom}</div>
       <span class="row-votes">${n.votes} vote${n.votes!==1?'s':''}</span>
-      <button class="row-delete" onclick="deleteName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✕</button>
-    </div>`).join('');
+      <button class="row-delete" onclick="deleteName('${n._id}','${n.name.replace(/'/g,"\\\'")}')" title="Delete">✕</button>
+    </div>`;
+  }).join('');
 }
 
 function renderPending(){
@@ -503,10 +678,11 @@ function renderPending(){
   list.innerHTML=pendingNames.map(n=>{
     const dt=new Date(n.createdAt);
     const timeStr=dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const submitter=n.submittedBy?` · by ${n.submittedBy}`:'';
     return `<div class="pending-item">
       <div class="pending-dot ${n.gender}"></div>
       <div class="pending-name">${n.name}</div>
-      <div class="pending-meta">${n.gender} · ${timeStr}</div>
+      <div class="pending-meta">${n.gender} · ${timeStr}${submitter}</div>
       <div class="pending-actions">
         <button class="btn btn-success btn-sm" onclick="approveName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✓ Approve</button>
         <button class="btn btn-danger btn-sm"  onclick="rejectName('${n._id}','${n.name.replace(/'/g,"\\'")}')">✕ Reject</button>

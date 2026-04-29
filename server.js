@@ -28,6 +28,10 @@ const DEFAULT_SETTINGS = {
   tickerCount:       20,
   tickerTemplate:    '{gender_emoji} {voter} → {name}',
   tickerSpeed:       'normal',
+  theme:             'sage',
+  themePageBg:       '#C5D1B8',
+  themeCardBg:       '#A8B898',
+  themeAccent:       '#9CAF88',
 };
 
 async function getSettings() {
@@ -101,7 +105,11 @@ function escapeRegex(str) {
 // ─── Public: settings ─────────────────────────────────────────────────────────
 app.get('/api/settings', async (req, res) => {
   const s = await getSettings();
-  res.json({ leaderboardCount: s.leaderboardCount, moderationEnabled: s.moderationEnabled, tickerCount: s.tickerCount, tickerTemplate: s.tickerTemplate, tickerSpeed: s.tickerSpeed });
+  res.json({
+    leaderboardCount: s.leaderboardCount, moderationEnabled: s.moderationEnabled,
+    tickerCount: s.tickerCount, tickerTemplate: s.tickerTemplate, tickerSpeed: s.tickerSpeed,
+    theme: s.theme, themePageBg: s.themePageBg, themeCardBg: s.themeCardBg, themeAccent: s.themeAccent,
+  });
 });
 
 // ─── Public: approved names ───────────────────────────────────────────────────
@@ -123,7 +131,7 @@ app.get('/api/recent-votes', async (req, res) => {
 
 // ─── Public: submit name ──────────────────────────────────────────────────────
 app.post('/api/names', async (req, res) => {
-  const { name, gender } = req.body;
+  const { name, gender, voterName, deviceId } = req.body;
   if (!name || !gender || !['boy', 'girl'].includes(gender))
     return res.status(400).json({ error: 'Name and gender (boy/girl) required' });
   const trimmed = name.trim();
@@ -136,7 +144,13 @@ app.post('/api/names', async (req, res) => {
   }
   const settings = await getSettings();
   const approved = !settings.moderationEnabled;
-  const doc = await namesDb.insert({ name: trimmed, nameLower: trimmed.toLowerCase(), gender, votes: 0, approved, createdAt: new Date() });
+  // Resolve the submitter's display name (handles disambiguation)
+  const resolvedSubmitter = deviceId ? await resolveVoterName(voterName, deviceId) : (voterName || null);
+  const doc = await namesDb.insert({
+    name: trimmed, nameLower: trimmed.toLowerCase(), gender, votes: 0, approved,
+    submittedBy: resolvedSubmitter, submittedByDeviceId: deviceId || null,
+    createdAt: new Date()
+  });
   if (approved) broadcast('update', { ts: Date.now() });
   else          broadcast('pending', { ts: Date.now() });
   res.status(approved ? 200 : 202).json({ ...doc, pending: !approved });
@@ -242,15 +256,23 @@ app.delete(`/api/admin/${ADMIN_SECRET}/names/:id`, async (req, res) => {
 });
 
 app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
-  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplate, tickerSpeed } = req.body;
+  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplate, tickerSpeed, theme, themePageBg, themeCardBg, themeAccent } = req.body;
   const patch = {};
   if (typeof moderationEnabled === 'boolean') patch.moderationEnabled = moderationEnabled;
   if (typeof leaderboardCount  === 'number' && leaderboardCount  >= 1  && leaderboardCount  <= 10) patch.leaderboardCount  = leaderboardCount;
   if (typeof tickerCount       === 'number' && tickerCount       >= 5  && tickerCount       <= 50) patch.tickerCount       = tickerCount;
   if (typeof tickerTemplate    === 'string' && tickerTemplate.length   <= 200)                     patch.tickerTemplate    = tickerTemplate.trim();
   if (['slow','normal','fast'].includes(tickerSpeed))                                               patch.tickerSpeed       = tickerSpeed;
+  if (['classic','sage','custom'].includes(theme))                                                  patch.theme             = theme;
+  if (typeof themePageBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(themePageBg))                     patch.themePageBg       = themePageBg;
+  if (typeof themeCardBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(themeCardBg))                     patch.themeCardBg       = themeCardBg;
+  if (typeof themeAccent === 'string' && /^#[0-9a-fA-F]{6}$/.test(themeAccent))                     patch.themeAccent       = themeAccent;
   const updated = await saveSettings(patch);
-  broadcast('settings', { leaderboardCount: updated.leaderboardCount, moderationEnabled: updated.moderationEnabled, tickerCount: updated.tickerCount, tickerTemplate: updated.tickerTemplate, tickerSpeed: updated.tickerSpeed });
+  broadcast('settings', {
+    leaderboardCount: updated.leaderboardCount, moderationEnabled: updated.moderationEnabled,
+    tickerCount: updated.tickerCount, tickerTemplate: updated.tickerTemplate, tickerSpeed: updated.tickerSpeed,
+    theme: updated.theme, themePageBg: updated.themePageBg, themeCardBg: updated.themeCardBg, themeAccent: updated.themeAccent,
+  });
   res.json(updated);
 });
 
@@ -262,10 +284,16 @@ app.post(`/api/admin/${ADMIN_SECRET}/reset`, async (req, res) => {
 });
 
 app.get(`/api/admin/${ADMIN_SECRET}/export`, async (req, res) => {
+  const names = await namesDb.find({}).sort({ createdAt: 1 });
   const votes = await votesDb.find({}).sort({ votedAt: 1 });
-  let csv = 'Action,Voter Name,Baby Name,Gender,Device ID,Time\n';
+  // Build a lookup of name ID → submitter
+  const nameMap = {};
+  names.forEach(n => { nameMap[n._id] = n; });
+  let csv = 'Action,Voter Name,Baby Name,Gender,Nominated By,Device ID,Time\n';
   votes.forEach(v => {
-    csv += `"${v.action||'vote'}","${v.voterName||'Anonymous'}","${v.nameName}","${v.nameGender}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
+    const nom = nameMap[v.nameId];
+    const nominatedBy = nom && nom.submittedBy ? nom.submittedBy : '';
+    csv += `"${v.action||'vote'}","${v.voterName||'Anonymous'}","${v.nameName}","${v.nameGender}","${nominatedBy}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
   });
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="baby-name-votes.csv"');
