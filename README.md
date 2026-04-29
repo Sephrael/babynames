@@ -1,4 +1,4 @@
-# 🍼 Baby Name Leaderboard
+# 🍼 Baby Ballot Box
 
 A real-time baby shower name voting app with a beautiful TV display, mobile voting page, and admin panel.
 

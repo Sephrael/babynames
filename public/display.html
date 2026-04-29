@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baby Name Leaderboard</title>
+<title>Baby Ballot Box</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -212,7 +212,7 @@
   <!-- HEADER: centered title, QR absolute right -->
   <header class="header-band">
     <div class="header-eyebrow"><span class="phrase">SCAN QR CODE</span> &nbsp;·&nbsp; <span class="phrase">GUESS BABY'S GENDER</span> &nbsp;·&nbsp; <span class="phrase">SUGGEST A NAME</span> &nbsp;·&nbsp; <span class="phrase">CAST YOUR VOTES</span></div>
-    <h1 class="header-title"><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent;">Baby Ballot Box</span></h1>
+    <h1 class="header-title"><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--theme-accent, var(--gold));">Baby Ballot Box</span></h1>
     <p class="header-sub">Every vote counts — let the best name win ✨</p>
     
     <!-- GENDER POLL -->
@@ -440,6 +440,7 @@ function applyTheme(settings) {
   r.setProperty('--theme-page-bg', colors.pageBg);
   r.setProperty('--theme-card-bg', colors.cardBg);
   r.setProperty('--theme-border', hexToRgba(colors.accent, 0.3));
+  r.setProperty('--theme-accent', colors.accent);
 }
 
 async function loadQR(){

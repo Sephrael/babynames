@@ -381,7 +381,7 @@ app.get('/vote',                  (req, res) => res.sendFile(path.join(__dirname
 app.get(`/admin-${ADMIN_SECRET}`, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🍼 Baby Name Leaderboard running!`);
+  console.log(`\n🍼 Baby Ballot Box running!`);
   console.log(`   Display (TV):  ${BASE_URL}/`);
   console.log(`   Voter page:    ${BASE_URL}/vote`);
   console.log(`   Admin page:    ${BASE_URL}/admin-${ADMIN_SECRET}`);

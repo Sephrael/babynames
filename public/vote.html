@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Vote for Baby's Name 🍼</title>
+<title>Baby Ballot Box 🍼</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -153,7 +153,7 @@
 <div class="gate-overlay" id="gate-overlay">
   <div class="gate-card">
     <span class="gate-icon">🍼</span>
-    <h1 class="gate-title">Welcome to the<br><span class="pink">Baby</span> <span class="blue">Name</span> Vote!</h1>
+    <h1 class="gate-title">Welcome to the<br><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--theme-accent, var(--gold));">Baby Ballot Box</span>!</h1>
     <p class="gate-sub">Suggest new baby names and vote for your favorites! Enter your name to get started 💕</p>
 
     <div class="fp-warning" id="fp-warning">
@@ -186,7 +186,7 @@
 <div class="hero">
   <div class="hero-top">
     <span class="hero-icon">🍼</span>
-    <h1>Vote for <span class="pink">Baby's</span> <span class="blue">Name</span></h1>
+    <h1><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--theme-accent, var(--gold));">Baby Ballot Box</span></h1>
   </div>
   <p class="hero-sub">Suggest a name or vote for your favorites!</p>
   <div class="voter-row" id="voter-row">
@@ -547,6 +547,7 @@ function applyTheme(settings) {
   s.setProperty('--theme-page-bg',colors.pageBg);
   s.setProperty('--theme-card-bg',colors.cardBg);
   s.setProperty('--theme-border',hexToRgba(colors.accent,0.25));
+  s.setProperty('--theme-accent',colors.accent);
 }
 
 // ─── SSE ──────────────────────────────────────────────────────────────────────
