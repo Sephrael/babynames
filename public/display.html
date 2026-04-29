@@ -220,10 +220,10 @@
       <div class="poll-title">Prediction Poll</div>
       <div class="poll-bar-wrapper">
         <div class="poll-side poll-girl" style="width: 50%">
-          <span class="poll-label">🎀 50%</span>
+          <span class="poll-label"><span class="emoji-girl">🎀</span> 50%</span>
         </div>
         <div class="poll-side poll-boy" style="width: 50%">
-          <span class="poll-label">50% 🐋</span>
+          <span class="poll-label">50% <span class="emoji-boy">🧢</span></span>
         </div>
         <div class="poll-marker"></div>
       </div>
@@ -240,7 +240,7 @@
     <div class="middle-divider"></div>
     <div class="half-girl">
       <div class="col-header">
-        <span class="col-label-icon">🎀</span>
+        <span class="col-label-icon emoji-girl">🎀</span>
         <span class="col-label-text">Girl Names</span>
         <div class="col-vote-total"><span class="total-num" id="girl-total">0</span><span class="total-label">votes</span></div>
       </div>
@@ -250,7 +250,7 @@
       <div class="col-header">
         <div class="col-vote-total"><span class="total-num" id="boy-total">0</span><span class="total-label">votes</span></div>
         <span class="col-label-text">Boy Names</span>
-        <span class="col-label-icon">🐋</span>
+        <span class="col-label-icon emoji-boy">🧢</span>
       </div>
       <div class="col" id="boy-col"></div>
     </div>
@@ -287,6 +287,7 @@ let toastTimer;
 function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);}
 
 let prevData={girls:[],boys:[]},leaderboardCount=5;
+let girlEmoji='🎀', boyEmoji='🧢';
 let tickerSettings={count:20,template:'{gender_emoji} {voter} → {name}',speed:'normal'};
 
 function applySizeForCount(n){
@@ -303,7 +304,7 @@ function applyTickerSpeed(speed){
 }
 
 function renderTickerItem(vote,template){
-  const g=vote.nameGender==='girl'?'🎀':'🐋';
+  const g=vote.nameGender==='girl'?girlEmoji:boyEmoji;
   return template
     .replace(/\{gender_emoji\}/g,g)
     .replace(/\{voter\}/g,`<span class="t-voter">${vote.voterName}</span>`)
@@ -316,7 +317,7 @@ function renderCol(colId,names,gender,prevNames){
   const maxVotes=topN.length?Math.max(...topN.map(n=>n.votes),1):1;
   const top1=topN[0],prevTop1=prevNames[0];
   const isNewTop1=top1&&prevTop1&&top1._id!==prevTop1._id&&top1.votes>0;
-  if(!topN.length){col.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${gender==='girl'?'🎀':'🐋'}</div><div class="empty-state-text">No names yet — be the first!</div></div>`;return;}
+  if(!topN.length){col.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${gender==='girl'?girlEmoji:boyEmoji}</div><div class="empty-state-text">No names yet — be the first!</div></div>`;return;}
   col.innerHTML=topN.map((name,i)=>{
     const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
     const rankLabel=i===0?'👑':`${i+1}`;
@@ -441,6 +442,10 @@ function applyTheme(settings) {
   r.setProperty('--theme-card-bg', colors.cardBg);
   r.setProperty('--theme-border', hexToRgba(colors.accent, 0.3));
   r.setProperty('--theme-accent', colors.accent);
+  girlEmoji = settings.girlEmoji || '🎀';
+  boyEmoji = settings.boyEmoji || '🧢';
+  document.querySelectorAll('.emoji-girl').forEach(el => el.textContent = girlEmoji);
+  document.querySelectorAll('.emoji-boy').forEach(el => el.textContent = boyEmoji);
 }
 
 async function loadQR(){
@@ -457,16 +462,16 @@ async function fetchGenderVotes() {
     if (total === 0) {
       document.querySelector('.poll-girl').style.width = '50%';
       document.querySelector('.poll-boy').style.width = '50%';
-      document.querySelector('.poll-girl .poll-label').textContent = '🎀 50%';
-      document.querySelector('.poll-boy .poll-label').textContent = '50% 🐋';
+      document.querySelector('.poll-girl .poll-label').innerHTML = `<span class="emoji-girl">${girlEmoji}</span> 50%`;
+      document.querySelector('.poll-boy .poll-label').innerHTML = `50% <span class="emoji-boy">${boyEmoji}</span>`;
       return;
     }
     const girlPct = Math.round((girl / total) * 100);
     const boyPct = 100 - girlPct;
     document.querySelector('.poll-girl').style.width = girlPct + '%';
     document.querySelector('.poll-boy').style.width = boyPct + '%';
-    document.querySelector('.poll-girl .poll-label').textContent = `🎀 ${girlPct}%`;
-    document.querySelector('.poll-boy .poll-label').textContent = `${boyPct}% 🐋`;
+    document.querySelector('.poll-girl .poll-label').innerHTML = `<span class="emoji-girl">${girlEmoji}</span> ${girlPct}%`;
+    document.querySelector('.poll-boy .poll-label').innerHTML = `${boyPct}% <span class="emoji-boy">${boyEmoji}</span>`;
   } catch (e) {
     console.error('Failed to fetch gender votes', e);
   }

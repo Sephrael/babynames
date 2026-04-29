@@ -44,18 +44,9 @@
   .gate-btn:hover{transform:translateY(-1px);}.gate-btn:active{transform:scale(0.98);}
   .gate-privacy{font-size:0.75rem;color:var(--muted);margin-top:1rem;line-height:1.5;}
 
-  /* Fingerprint warning */
-  .fp-warning{background:#fffbeb;border:2px solid #fcd34d;border-radius:14px;padding:1rem;margin-bottom:1rem;text-align:left;display:none;}
-  .fp-warning.visible{display:block;}
-  .fp-warning-title{font-size:0.85rem;font-weight:800;color:var(--amber);margin-bottom:0.3rem;}
-  .fp-warning-text{font-size:0.8rem;color:#78350f;line-height:1.5;}
-  .fp-warning-actions{display:flex;gap:0.5rem;margin-top:0.8rem;}
-  .fp-btn{flex:1;border:none;border-radius:10px;padding:0.6rem;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;}
-  .fp-btn-continue{background:var(--amber);color:white;}.fp-btn-cancel{background:rgba(0,0,0,0.08);color:var(--text);}
-
   /* ── HERO ── */
   .hero{background:linear-gradient(135deg,var(--pink-pale) 0%,var(--theme-card-bg) 50%,var(--blue-pale) 100%);padding:1.5rem 1.5rem 1.2rem;text-align:center;border-bottom:1px solid var(--theme-border);position:relative;overflow:hidden;}
-  .hero::before{content:'💕  🍼  ⭐  💙  ✨  💗  🌸  🐋';position:absolute;top:0;left:-100%;font-size:1.2rem;opacity:0.12;white-space:nowrap;animation:hero-scroll 18s linear infinite;letter-spacing:1.5rem;}
+  .hero::before{content:'💕  🍼  ⭐  💙  ✨  💗  🌸  ' attr(data-boy-emoji);position:absolute;top:0;left:-100%;font-size:1.2rem;opacity:0.12;white-space:nowrap;animation:hero-scroll 18s linear infinite;letter-spacing:1.5rem;}
   @keyframes hero-scroll{to{left:100%}}
   .hero-top{display:flex;align-items:center;justify-content:center;gap:0.8rem;margin-bottom:0.3rem;flex-wrap:wrap;}
   .hero-icon{font-size:2.4rem;animation:bounce 2s infinite ease-in-out;}
@@ -156,15 +147,6 @@
     <h1 class="gate-title">Welcome to the<br><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--theme-accent, var(--gold));">Baby Ballot Box</span>!</h1>
     <p class="gate-sub">Suggest names, guess the gender, and vote for your favorites! Enter your name to get started 💕</p>
 
-    <div class="fp-warning" id="fp-warning">
-      <div class="fp-warning-title">⚠️ This device has already voted</div>
-      <div class="fp-warning-text">It looks like someone already voted from this device under a different name. Voting again may be considered unfair. Are you sure you want to continue?</div>
-      <div class="fp-warning-actions">
-        <button class="fp-btn fp-btn-cancel" onclick="cancelFpWarning()">Go Back</button>
-        <button class="fp-btn fp-btn-continue" onclick="confirmFpWarning()">Continue Anyway</button>
-      </div>
-    </div>
-
     <div class="gate-fields" id="gate-fields">
       <div>
         <label class="gate-label">Your First Name</label>
@@ -183,10 +165,12 @@
 </div>
 
 <!-- MAIN -->
-<div class="hero">
+<div class="hero" id="hero-bg" data-boy-emoji="🧢">
   <div class="hero-top">
     <span class="hero-icon">🍼</span>
-    <h1><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--theme-accent, var(--gold));">Baby Ballot Box</span></h1>
+    <a href="/" style="text-decoration: none;">
+      <h1><span style="background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--theme-accent, var(--gold));">Baby Ballot Box</span></h1>
+    </a>
   </div>
   <p class="hero-sub">Suggest a name or vote for your favorites!</p>
   <div class="voter-row" id="voter-row">
@@ -200,8 +184,8 @@
 
 <div class="tab-bar">
   <button class="tab-btn tab-all active" onclick="switchTab('all')">✨ All Names</button>
-  <button class="tab-btn tab-girl" onclick="switchTab('girl')">🎀 Girls</button>
-  <button class="tab-btn tab-boy" onclick="switchTab('boy')">🐋 Boys</button>
+  <button class="tab-btn tab-girl" onclick="switchTab('girl')"><span class="emoji-girl">🎀</span> Girls</button>
+  <button class="tab-btn tab-boy" onclick="switchTab('boy')"><span class="emoji-boy">🧢</span> Boys</button>
 </div>
 
 <div class="content">
@@ -209,16 +193,16 @@
   <div class="predict-card" id="predict-card">
     <div class="predict-title">What's your prediction?</div>
     <div class="predict-actions">
-      <button class="predict-btn girl" id="predict-btn-girl" onclick="castGenderVote('girl')">🎀 Team Girl</button>
-      <button class="predict-btn boy" id="predict-btn-boy" onclick="castGenderVote('boy')">🐋 Team Boy</button>
+      <button class="predict-btn girl" id="predict-btn-girl" onclick="castGenderVote('girl')"><span class="emoji-girl">🎀</span> Team Girl</button>
+      <button class="predict-btn boy" id="predict-btn-boy" onclick="castGenderVote('boy')"><span class="emoji-boy">🧢</span> Team Boy</button>
     </div>
   </div>
 
   <div class="suggest-card">
     <div class="suggest-title"><span>✍️</span> Suggest a Name</div>
     <div class="gender-toggle">
-      <button class="gender-btn girl selected" id="btn-girl" onclick="selectGender('girl')">🎀 Girl</button>
-      <button class="gender-btn boy" id="btn-boy" onclick="selectGender('boy')">🐋 Boy</button>
+      <button class="gender-btn girl selected" id="btn-girl" onclick="selectGender('girl')"><span class="emoji-girl">🎀</span> Girl</button>
+      <button class="gender-btn boy" id="btn-boy" onclick="selectGender('boy')"><span class="emoji-boy">🧢</span> Boy</button>
     </div>
     <div class="name-input-row">
       <input class="name-input" id="name-input" type="text" placeholder="Enter a name..." maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false" />
@@ -228,17 +212,17 @@
   </div>
 
   <div class="tab-content active" id="tab-all">
-    <div class="section-heading">🎀 Girl Names <span class="count-badge" id="girl-count-all">0</span></div>
+    <div class="section-heading"><span class="emoji-girl">🎀</span> Girl Names <span class="count-badge" id="girl-count-all">0</span></div>
     <div class="names-list" id="girl-list-all"></div>
-    <div class="section-heading">🐋 Boy Names <span class="count-badge" id="boy-count-all">0</span></div>
+    <div class="section-heading"><span class="emoji-boy">🧢</span> Boy Names <span class="count-badge" id="boy-count-all">0</span></div>
     <div class="names-list" id="boy-list-all"></div>
   </div>
   <div class="tab-content" id="tab-girl">
-    <div class="section-heading">🎀 Girl Names <span class="count-badge" id="girl-count-tab">0</span></div>
+    <div class="section-heading"><span class="emoji-girl">🎀</span> Girl Names <span class="count-badge" id="girl-count-tab">0</span></div>
     <div class="names-list" id="girl-list-tab"></div>
   </div>
   <div class="tab-content" id="tab-boy">
-    <div class="section-heading">🐋 Boy Names <span class="count-badge" id="boy-count-tab">0</span></div>
+    <div class="section-heading"><span class="emoji-boy">🧢</span> Boy Names <span class="count-badge" id="boy-count-tab">0</span></div>
     <div class="names-list" id="boy-list-tab"></div>
   </div>
 </div>
@@ -264,8 +248,6 @@ let DEVICE_ID=getDeviceId(); // may be reassigned on fingerprint-warning confirm
 let VOTER_NAME=localStorage.getItem('baby_voter_name')||null;
 
 // ─── Gate ─────────────────────────────────────────────────────────────────────
-let fpWarningPending=false;
-
 function submitGate(){
   const first=document.getElementById('gate-first').value.trim();
   const last=document.getElementById('gate-last').value.trim().toUpperCase();
@@ -273,34 +255,12 @@ function submitGate(){
   if(!first){markErr('gate-first',errEl,'Please enter your first name.');return;}
   if(!last||!/^[A-Za-z]$/.test(last)){markErr('gate-last',errEl,'Please enter your last initial (one letter).');return;}
   const proposedName=`${first} ${last}.`;
-  const storedFp=localStorage.getItem('baby_fingerprint');
-  const storedName=localStorage.getItem('baby_voter_name');
-  // Warn if same fingerprint, DIFFERENT name
-  if(storedFp===FINGERPRINT&&storedName&&storedName!==proposedName){
-    fpWarningPending=proposedName;
-    document.getElementById('fp-warning').classList.add('visible');
-    document.getElementById('gate-fields').style.opacity='0.4';
-    document.getElementById('gate-btn').disabled=true;
-    return;
-  }
+  
+  // Directly complete login without checking for fingerprint match
+  // We still reset DEVICE_ID if the name is completely different just so it doesn't cross streams 
+  // (or we can just leave DEVICE_ID the same). The user asked to remove the warning screen.
+  
   completeLogin(proposedName);
-}
-
-function cancelFpWarning(){
-  fpWarningPending=false;
-  document.getElementById('fp-warning').classList.remove('visible');
-  document.getElementById('gate-fields').style.opacity='1';
-  document.getElementById('gate-btn').disabled=false;
-  document.getElementById('gate-first').value='';
-  document.getElementById('gate-last').value='';
-}
-
-function confirmFpWarning(){
-  // New device ID so votes don't collide with the previous identity
-  const newId='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-  localStorage.setItem('baby_device_id',newId);
-  DEVICE_ID=newId;
-  completeLogin(fpWarningPending);
 }
 
 function completeLogin(name){
@@ -334,7 +294,6 @@ function logout(){
   document.getElementById('gate-first').value='';
   document.getElementById('gate-last').value='';
   document.getElementById('gate-error').textContent='';
-  document.getElementById('fp-warning').classList.remove('visible');
   document.getElementById('gate-fields').style.opacity='1';
   document.getElementById('gate-btn').disabled=false;
   document.getElementById('gate-overlay').style.display='';
@@ -357,6 +316,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 // ─── App state ────────────────────────────────────────────────────────────────
 let allNames=[],myVotes=new Set(),selectedGender='girl',submitting=false;
 let myGenderVote=null;
+let girlEmoji='🎀',boyEmoji='🧢';
 
 function selectGender(g){
   selectedGender=g;
@@ -388,7 +348,7 @@ function renderNames(){
 
 function renderList(id,names,gender){
   const el=document.getElementById(id);
-  if(!names.length){el.innerHTML=`<div class="empty"><span class="empty-icon">${gender==='girl'?'🎀':'🐋'}</span>No names yet — suggest one above!</div>`;return;}
+  if(!names.length){el.innerHTML=`<div class="empty"><span class="empty-icon">${gender==='girl'?girlEmoji:boyEmoji}</span>No names yet — suggest one above!</div>`;return;}
   el.innerHTML=names.map(name=>{
     const voted=myVotes.has(name._id);
     return `<div class="name-item ${gender}-item ${voted?'voted':''}" id="ni-${name._id}" onclick="toggleVote('${name._id}','${gender}','${name.name.replace(/'/g,"\\'")}')">
@@ -548,6 +508,13 @@ function applyTheme(settings) {
   s.setProperty('--theme-card-bg',colors.cardBg);
   s.setProperty('--theme-border',hexToRgba(colors.accent,0.25));
   s.setProperty('--theme-accent',colors.accent);
+
+  girlEmoji = settings.girlEmoji || '🎀';
+  boyEmoji = settings.boyEmoji || '🧢';
+  document.querySelectorAll('.emoji-girl').forEach(el => el.textContent = girlEmoji);
+  document.querySelectorAll('.emoji-boy').forEach(el => el.textContent = boyEmoji);
+  document.getElementById('hero-bg').setAttribute('data-boy-emoji', boyEmoji);
+  renderNames(); // To update empty state icons
 }
 
 // ─── SSE ──────────────────────────────────────────────────────────────────────

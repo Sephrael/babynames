@@ -18,10 +18,21 @@
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
   /* ── TOPBAR ── */
-  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:50;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:50;}
+  .topbar-title-wrapper{display:flex;align-items:center;gap:0.7rem;}
   .topbar-icon{font-size:1.4rem;}
-  .topbar-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;font-style:italic;flex:1;}
-  .topbar-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
+  .topbar-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;font-style:italic;}
+  .title-gradient{background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--gold);}
+  .topbar-actions{position:absolute;right:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;}
+  
+  @media(max-width:850px){
+    .topbar{justify-content:flex-start;}
+    .topbar-actions{position:static;margin-left:auto;}
+  }
+  @media(max-width:550px){
+    .topbar{flex-direction:column;align-items:flex-start;gap:1rem;}
+    .topbar-actions{margin-left:0;width:100%;}
+  }
 
   /* ── BUTTONS ── */
   .btn{border:none;border-radius:8px;padding:0.5rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:0.4rem;white-space:nowrap;}
@@ -196,8 +207,10 @@
 <body>
 
 <div class="topbar">
-  <span class="topbar-icon">🍼</span>
-  <span class="topbar-title">Baby Ballot Box Admin</span>
+  <div class="topbar-title-wrapper">
+    <span class="topbar-icon">🍼</span>
+    <span class="topbar-title"><span class="title-gradient">Baby Ballot Box</span> Admin</span>
+  </div>
   <div class="topbar-actions">
     <button class="btn btn-primary" onclick="exportCsv()">📥 Export CSV</button>
     <button class="btn btn-danger"  onclick="confirmReset()">🗑️ Reset All</button>
@@ -284,7 +297,7 @@
         <!-- Variable reference chips — click to insert -->
         <div class="var-chips">
           <span class="var-chip-label">Insert variable:</span>
-          <span class="var-chip" onclick="insertVar('{gender_emoji}')" title="🎀 for girl, 🐋 for boy">{gender_emoji}</span>
+          <span class="var-chip" onclick="insertVar('{gender_emoji}')" title="🎀 for girl, 🧢 for boy">{gender_emoji}</span>
           <span class="var-chip" onclick="insertVar('{voter}')"       title="Voter's first name + last initial">{voter}</span>
           <span class="var-chip" onclick="insertVar('{name}')"        title="The baby name that was voted for">{name}</span>
         </div>
@@ -298,13 +311,29 @@
         <!-- Usage guide -->
         <div style="margin-top:0.8rem;padding:0.8rem;background:var(--surface3);border-radius:8px;font-size:0.8rem;color:var(--muted);line-height:1.7;">
           <strong style="color:var(--text);display:block;margin-bottom:0.3rem;">Variable reference</strong>
-          <code style="color:var(--gold)">{gender_emoji}</code> — 🎀 for girl names, 🐋 for boy names<br>
+          <code style="color:var(--gold)">{gender_emoji}</code> — 🎀 for girl names, 🧢 for boy names<br>
           <code style="color:var(--gold)">{voter}</code> — Voter's name as entered at sign-in (e.g. <em>Priya M.</em>)<br>
           <code style="color:var(--gold)">{name}</code> — The baby name they voted for (e.g. <em>Ella</em>)<br>
           <span style="margin-top:0.4rem;display:block;">You can use any emoji or punctuation freely. Examples:</span>
           <code style="color:var(--text);display:block;margin-top:0.3rem">{gender_emoji} {voter} → {name}</code>
           <code style="color:var(--text);display:block">{voter} loves {name} {gender_emoji}</code>
           <code style="color:var(--text);display:block">{name} ✨ nominated by {voter}</code>
+        </div>
+      </div>
+
+      <!-- Emojis -->
+      <div class="setting-group">
+        <div class="setting-label">Gender Emojis</div>
+        <div class="setting-desc">Customize the emojis used for girls and boys across the app.</div>
+        <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:var(--pink);font-size:0.9rem;font-weight:600;">Girl</span>
+            <input class="speed-select" id="emoji-girl" type="text" maxlength="2" value="🎀" style="width:60px;text-align:center;font-size:1.2rem;" oninput="settingsDirty()" />
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="color:var(--blue);font-size:0.9rem;font-weight:600;">Boy</span>
+            <input class="speed-select" id="emoji-boy" type="text" maxlength="2" value="🧢" style="width:60px;text-align:center;font-size:1.2rem;" oninput="settingsDirty()" />
+          </div>
         </div>
       </div>
 
@@ -397,7 +426,7 @@
       <div id="girl-names-list"></div>
     </div>
     <div class="panel">
-      <div class="panel-header"><span>🐋</span><span class="panel-title">Boy Names</span><span class="panel-badge" id="boy-badge">0</span></div>
+      <div class="panel-header"><span>🧢</span><span class="panel-title">Boy Names</span><span class="panel-badge" id="boy-badge">0</span></div>
       <div id="boy-names-list"></div>
     </div>
   </div>
@@ -408,7 +437,7 @@
     <div class="filter-row">
       <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
       <button class="filter-btn" onclick="setFilter('girl',this)">🎀 Girl</button>
-      <button class="filter-btn" onclick="setFilter('boy',this)">🐋 Boy</button>
+      <button class="filter-btn" onclick="setFilter('boy',this)">🧢 Boy</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -479,7 +508,9 @@ function stepTicker(d){tickerCountVal=Math.max(5,Math.min(50,tickerCountVal+d));
 const PREVIEW_VOTE={voterName:'Priya M.',nameName:'Ella',nameGender:'girl'};
 
 function renderTemplatePreview(template){
-  const genderEmoji=PREVIEW_VOTE.nameGender==='girl'?'🎀':'🐋';
+  const girlEmoji=document.getElementById('emoji-girl')?document.getElementById('emoji-girl').value||'🎀':'🎀';
+  const boyEmoji=document.getElementById('emoji-boy')?document.getElementById('emoji-boy').value||'🧢':'🧢';
+  const genderEmoji=PREVIEW_VOTE.nameGender==='girl'?girlEmoji:boyEmoji;
   return template
     .replace(/\{gender_emoji\}/g,genderEmoji)
     .replace(/\{voter\}/g,`<span class="t-voter">${PREVIEW_VOTE.voterName}</span>`)
@@ -512,6 +543,8 @@ function applySettings(s){
   document.getElementById('moderation-label').textContent=s.moderationEnabled?'On — names need approval':'Off — names publish instantly';
   document.getElementById('ticker-speed').value=s.tickerSpeed||'normal';
   const tmpl=s.tickerTemplate||'{gender_emoji} {voter} → {name}';
+  document.getElementById('emoji-girl').value=s.girlEmoji||'🎀';
+  document.getElementById('emoji-boy').value=s.boyEmoji||'🧢';
   document.getElementById('ticker-template').value=tmpl;
   document.getElementById('template-preview').innerHTML=renderTemplatePreview(tmpl);
   // Theme
@@ -604,6 +637,8 @@ async function saveSettings(){
     tickerTemplate:document.getElementById('ticker-template').value.trim()||'{gender_emoji} {voter} → {name}',
     tickerSpeed:document.getElementById('ticker-speed').value,
     theme:selectedTheme,
+    girlEmoji:document.getElementById('emoji-girl').value.trim()||'🎀',
+    boyEmoji:document.getElementById('emoji-boy').value.trim()||'🧢',
   };
   // For custom theme, include the hex colors
   if(selectedTheme==='custom'){
@@ -751,7 +786,7 @@ function renderVoteLog(){
         <div class="device-id" title="${v.deviceId}">${v.deviceId}</div>
       </div></td>
       <td style="font-weight:600">${targetName}</td>
-      <td><span class="gender-tag ${targetGender}">${targetGender==='girl'?'🎀 Girl':'🐋 Boy'}</span></td>
+      <td><span class="gender-tag ${targetGender}">${targetGender==='girl'?'🎀 Girl':'🧢 Boy'}</span></td>
       <td><span class="timestamp">${timeStr}</span></td>
     </tr>`;
   }).join('');

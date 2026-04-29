@@ -32,6 +32,8 @@ const DEFAULT_SETTINGS = {
   themePageBg:       '#C5D1B8',
   themeCardBg:       '#A8B898',
   themeAccent:       '#9CAF88',
+  girlEmoji:         '🎀',
+  boyEmoji:          '🧢',
 };
 
 async function getSettings() {
@@ -109,6 +111,7 @@ app.get('/api/settings', async (req, res) => {
     leaderboardCount: s.leaderboardCount, moderationEnabled: s.moderationEnabled,
     tickerCount: s.tickerCount, tickerTemplate: s.tickerTemplate, tickerSpeed: s.tickerSpeed,
     theme: s.theme, themePageBg: s.themePageBg, themeCardBg: s.themeCardBg, themeAccent: s.themeAccent,
+    girlEmoji: s.girlEmoji, boyEmoji: s.boyEmoji,
   });
 });
 
@@ -327,7 +330,7 @@ app.delete(`/api/admin/${ADMIN_SECRET}/names/:id`, async (req, res) => {
 });
 
 app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
-  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplate, tickerSpeed, theme, themePageBg, themeCardBg, themeAccent } = req.body;
+  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplate, tickerSpeed, theme, themePageBg, themeCardBg, themeAccent, girlEmoji, boyEmoji } = req.body;
   const patch = {};
   if (typeof moderationEnabled === 'boolean') patch.moderationEnabled = moderationEnabled;
   if (typeof leaderboardCount  === 'number' && leaderboardCount  >= 1  && leaderboardCount  <= 10) patch.leaderboardCount  = leaderboardCount;
@@ -338,11 +341,14 @@ app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
   if (typeof themePageBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(themePageBg))                     patch.themePageBg       = themePageBg;
   if (typeof themeCardBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(themeCardBg))                     patch.themeCardBg       = themeCardBg;
   if (typeof themeAccent === 'string' && /^#[0-9a-fA-F]{6}$/.test(themeAccent))                     patch.themeAccent       = themeAccent;
+  if (typeof girlEmoji === 'string')                                                                patch.girlEmoji         = girlEmoji;
+  if (typeof boyEmoji === 'string')                                                                 patch.boyEmoji          = boyEmoji;
   const updated = await saveSettings(patch);
   broadcast('settings', {
     leaderboardCount: updated.leaderboardCount, moderationEnabled: updated.moderationEnabled,
     tickerCount: updated.tickerCount, tickerTemplate: updated.tickerTemplate, tickerSpeed: updated.tickerSpeed,
     theme: updated.theme, themePageBg: updated.themePageBg, themeCardBg: updated.themeCardBg, themeAccent: updated.themeAccent,
+    girlEmoji: updated.girlEmoji, boyEmoji: updated.boyEmoji,
   });
   res.json(updated);
 });
