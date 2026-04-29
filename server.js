@@ -1,10 +1,10 @@
 require('dotenv').config();
 
-const express  = require('express');
-const path     = require('path');
-const QRCode   = require('qrcode');
+const express   = require('express');
+const path      = require('path');
+const QRCode    = require('qrcode');
 const Datastore = require('nedb-promises');
-const fs       = require('fs');
+const fs        = require('fs');
 
 const app          = express();
 const PORT         = process.env.PORT         || 3000;
@@ -25,19 +25,14 @@ const DEFAULT_SETTINGS = {
   _id: 'settings',
   moderationEnabled: false,
   leaderboardCount:  5,
-  // Ticker settings
-  tickerCount:    20,       // how many recent votes to show in the ticker
-  tickerTemplate: '{gender_emoji} {voter} → {name}',  // display template
-  tickerSpeed:    'normal', // 'slow' | 'normal' | 'fast'
+  tickerCount:       20,
+  tickerTemplate:    '{gender_emoji} {voter} → {name}',
+  tickerSpeed:       'normal',
 };
 
 async function getSettings() {
   let s = await settingsDb.findOne({ _id: 'settings' });
-  if (!s) {
-    s = { ...DEFAULT_SETTINGS };
-    await settingsDb.insert(s);
-  }
-  // Back-fill any missing keys added in later versions
+  if (!s) { s = { ...DEFAULT_SETTINGS }; await settingsDb.insert(s); }
   let dirty = false;
   for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
     if (s[k] === undefined) { s[k] = v; dirty = true; }
@@ -70,42 +65,60 @@ function broadcast(event, data) {
   clients.forEach(c => { try { c.write(msg); } catch { clients.delete(c); } });
 }
 
+// ─── Voter name disambiguation ────────────────────────────────────────────────
+// If "Priya M." already exists on a DIFFERENT device, return "Priya M-2.",
+// "Priya M-3.", etc. Same device always keeps the same name.
+async function resolveVoterName(rawName, deviceId) {
+  if (!rawName) return null;
+  // Find all existing votes that used this base name
+  const existing = await votesDb.find({ voterName: new RegExp('^' + escapeRegex(rawName.replace(/\.$/, '')) + '(-\\d+)?\\.?$') });
+  // Filter to unique device→name pairs
+  const deviceNames = {};
+  existing.forEach(v => { if (v.deviceId) deviceNames[v.deviceId] = v.voterName; });
+
+  // If this device already has a stored name variant, use it
+  if (deviceNames[deviceId]) return deviceNames[deviceId];
+
+  // If no one else has used this name, use it as-is
+  const othersUsing = Object.entries(deviceNames).filter(([did]) => did !== deviceId);
+  if (othersUsing.length === 0) return rawName;
+
+  // Find next available suffix
+  const usedNames = new Set(Object.values(deviceNames));
+  const baseName = rawName.replace(/\.$/, ''); // strip trailing dot for suffix building
+  let suffix = 2;
+  while (true) {
+    const candidate = baseName.replace(/(-\d+)?$/, '') + `-${suffix}.`;
+    if (!usedNames.has(candidate)) return candidate;
+    suffix++;
+  }
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // ─── Public: settings ─────────────────────────────────────────────────────────
 app.get('/api/settings', async (req, res) => {
   const s = await getSettings();
-  res.json({
-    leaderboardCount: s.leaderboardCount,
-    moderationEnabled: s.moderationEnabled,
-    tickerCount:    s.tickerCount,
-    tickerTemplate: s.tickerTemplate,
-    tickerSpeed:    s.tickerSpeed,
-  });
+  res.json({ leaderboardCount: s.leaderboardCount, moderationEnabled: s.moderationEnabled, tickerCount: s.tickerCount, tickerTemplate: s.tickerTemplate, tickerSpeed: s.tickerSpeed });
 });
 
 // ─── Public: approved names ───────────────────────────────────────────────────
 app.get('/api/names', async (req, res) => {
-  try {
-    res.json(await namesDb.find({ approved: true }).sort({ votes: -1 }));
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  try { res.json(await namesDb.find({ approved: true }).sort({ votes: -1 })); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── Public: recent votes for ticker ─────────────────────────────────────────
+// Only show 'vote' actions (not unvotes) in the ticker
 app.get('/api/recent-votes', async (req, res) => {
   try {
     const s     = await getSettings();
     const limit = Math.min(parseInt(req.query.limit) || s.tickerCount, 50);
-    const votes = await votesDb.find({}).sort({ votedAt: -1 });
-    res.json(votes.slice(0, limit).map(v => ({
-      voterName:  v.voterName  || 'A Guest',
-      nameName:   v.nameName,
-      nameGender: v.nameGender,
-      votedAt:    v.votedAt,
-    })));
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+    const votes = await votesDb.find({ action: 'vote' }).sort({ votedAt: -1 });
+    res.json(votes.slice(0, limit).map(v => ({ voterName: v.voterName || 'A Guest', nameName: v.nameName, nameGender: v.nameGender, votedAt: v.votedAt })));
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── Public: submit name ──────────────────────────────────────────────────────
@@ -118,8 +131,7 @@ app.post('/api/names', async (req, res) => {
     return res.status(400).json({ error: 'Name must be 1–40 characters' });
   const existing = await namesDb.findOne({ nameLower: trimmed.toLowerCase(), gender });
   if (existing) {
-    if (!existing.approved)
-      return res.status(202).json({ pending: true, id: existing._id, message: 'Name is awaiting approval' });
+    if (!existing.approved) return res.status(202).json({ pending: true, id: existing._id, message: 'Name is awaiting approval' });
     return res.status(409).json({ error: 'Name already exists', id: existing._id });
   }
   const settings = await getSettings();
@@ -134,33 +146,61 @@ app.post('/api/names', async (req, res) => {
 app.post('/api/vote', async (req, res) => {
   const { nameId, deviceId, voterName } = req.body;
   if (!nameId || !deviceId) return res.status(400).json({ error: 'nameId and deviceId required' });
+
   const nameDoc = await namesDb.findOne({ _id: nameId, approved: true });
   if (!nameDoc) return res.status(404).json({ error: 'Name not found or not approved' });
-  if (await votesDb.findOne({ nameId, deviceId }))
-    return res.status(409).json({ error: 'Already voted for this name' });
-  await votesDb.insert({ nameId, nameName: nameDoc.name, nameGender: nameDoc.gender, deviceId, voterName: voterName || null, votedAt: new Date() });
+
+  // Check if this device already has an active vote for this name
+  const existingVote = await votesDb.findOne({ nameId, deviceId, action: 'vote' });
+  if (existingVote) return res.status(409).json({ error: 'Already voted for this name' });
+
+  // Resolve disambiguated voter name
+  const resolvedName = await resolveVoterName(voterName, deviceId);
+
+  // Record vote action in history
+  await votesDb.insert({
+    nameId, nameName: nameDoc.name, nameGender: nameDoc.gender,
+    deviceId, voterName: resolvedName,
+    action: 'vote', votedAt: new Date()
+  });
+
   await namesDb.update({ _id: nameId }, { $inc: { votes: 1 } });
   const updated = await namesDb.findOne({ _id: nameId });
+
   broadcast('update', { ts: Date.now() });
-  res.json({ success: true, votes: updated.votes });
+  res.json({ success: true, votes: updated.votes, resolvedVoterName: resolvedName });
 });
 
 // ─── Public: unvote ───────────────────────────────────────────────────────────
+// Keeps the vote record, adds an 'unvote' history entry instead of deleting
 app.delete('/api/vote', async (req, res) => {
-  const { nameId, deviceId } = req.body;
+  const { nameId, deviceId, voterName } = req.body;
   if (!nameId || !deviceId) return res.status(400).json({ error: 'nameId and deviceId required' });
-  if (!await votesDb.findOne({ nameId, deviceId }))
-    return res.status(404).json({ error: 'Vote not found' });
-  await votesDb.remove({ nameId, deviceId });
+
+  const existingVote = await votesDb.findOne({ nameId, deviceId, action: 'vote' });
+  if (!existingVote) return res.status(404).json({ error: 'Vote not found' });
+
+  // Mark the original vote as removed
+  await votesDb.update({ _id: existingVote._id }, { $set: { action: 'unvote', removedAt: new Date() } });
+
+  // Add a separate unvote history record
+  await votesDb.insert({
+    nameId, nameName: existingVote.nameName, nameGender: existingVote.nameGender,
+    deviceId, voterName: existingVote.voterName,
+    action: 'unvote', votedAt: new Date()
+  });
+
   await namesDb.update({ _id: nameId }, { $inc: { votes: -1 } });
   const updated = await namesDb.findOne({ _id: nameId });
+
   broadcast('update', { ts: Date.now() });
   res.json({ success: true, votes: Math.max(0, updated.votes) });
 });
 
-// ─── Public: votes by device ──────────────────────────────────────────────────
+// ─── Public: active votes for a device ───────────────────────────────────────
 app.get('/api/votes/:deviceId', async (req, res) => {
-  const votes = await votesDb.find({ deviceId: req.params.deviceId });
+  // Only return nameIds with an active 'vote' action (not unvoted)
+  const votes = await votesDb.find({ deviceId: req.params.deviceId, action: 'vote' });
   res.json(votes.map(v => v.nameId));
 });
 
@@ -170,19 +210,21 @@ app.get('/api/qr', async (req, res) => {
     const url = `${BASE_URL}/vote`;
     const qr  = await QRCode.toDataURL(url, { width: 400, margin: 2, color: { dark: '#4a4a6a', light: '#ffffff00' } });
     res.json({ qr, url });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ═══════════════════════════════════════════════════════
 // ADMIN APIs
 // ═══════════════════════════════════════════════════════
 
-app.get(`/api/admin/${ADMIN_SECRET}/votes`,   async (req, res) => res.json(await votesDb.find({}).sort({ votedAt: -1 })));
-app.get(`/api/admin/${ADMIN_SECRET}/names`,   async (req, res) => res.json(await namesDb.find({}).sort({ createdAt: -1 })));
-app.get(`/api/admin/${ADMIN_SECRET}/pending`, async (req, res) => res.json(await namesDb.find({ approved: false }).sort({ createdAt: -1 })));
-app.get(`/api/admin/${ADMIN_SECRET}/settings`,async (req, res) => res.json(await getSettings()));
+// All vote history (including unvotes), most recent first
+app.get(`/api/admin/${ADMIN_SECRET}/votes`, async (req, res) => {
+  res.json(await votesDb.find({}).sort({ votedAt: -1 }));
+});
+
+app.get(`/api/admin/${ADMIN_SECRET}/names`,    async (req, res) => res.json(await namesDb.find({}).sort({ createdAt: -1 })));
+app.get(`/api/admin/${ADMIN_SECRET}/pending`,  async (req, res) => res.json(await namesDb.find({ approved: false }).sort({ createdAt: -1 })));
+app.get(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => res.json(await getSettings()));
 
 app.post(`/api/admin/${ADMIN_SECRET}/names/:id/approve`, async (req, res) => {
   const doc = await namesDb.findOne({ _id: req.params.id });
@@ -208,13 +250,7 @@ app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
   if (typeof tickerTemplate    === 'string' && tickerTemplate.length   <= 200)                     patch.tickerTemplate    = tickerTemplate.trim();
   if (['slow','normal','fast'].includes(tickerSpeed))                                               patch.tickerSpeed       = tickerSpeed;
   const updated = await saveSettings(patch);
-  broadcast('settings', {
-    leaderboardCount: updated.leaderboardCount,
-    moderationEnabled: updated.moderationEnabled,
-    tickerCount:    updated.tickerCount,
-    tickerTemplate: updated.tickerTemplate,
-    tickerSpeed:    updated.tickerSpeed,
-  });
+  broadcast('settings', { leaderboardCount: updated.leaderboardCount, moderationEnabled: updated.moderationEnabled, tickerCount: updated.tickerCount, tickerTemplate: updated.tickerTemplate, tickerSpeed: updated.tickerSpeed });
   res.json(updated);
 });
 
@@ -227,9 +263,9 @@ app.post(`/api/admin/${ADMIN_SECRET}/reset`, async (req, res) => {
 
 app.get(`/api/admin/${ADMIN_SECRET}/export`, async (req, res) => {
   const votes = await votesDb.find({}).sort({ votedAt: 1 });
-  let csv = 'Voter Name,Baby Name,Gender,Device ID,Voted At\n';
+  let csv = 'Action,Voter Name,Baby Name,Gender,Device ID,Time\n';
   votes.forEach(v => {
-    csv += `"${v.voterName||'Anonymous'}","${v.nameName}","${v.nameGender}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
+    csv += `"${v.action||'vote'}","${v.voterName||'Anonymous'}","${v.nameName}","${v.nameGender}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
   });
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="baby-name-votes.csv"');

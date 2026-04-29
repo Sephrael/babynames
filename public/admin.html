@@ -321,7 +321,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Voter</th><th>Baby Name</th><th>Gender</th><th>Time</th></tr></thead>
+        <thead><tr><th>Action</th><th>Voter</th><th>Baby Name</th><th>Gender</th><th>Time</th></tr></thead>
         <tbody id="vote-log"></tbody>
       </table>
     </div>
@@ -531,7 +531,12 @@ function renderVoteLog(){
     const dt=new Date(v.votedAt);
     const timeStr=dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     const hasName=v.voterName&&v.voterName.trim();
-    return `<tr>
+    const isUnvote=v.action==='unvote';
+    const actionBadge=isUnvote
+      ? `<span style="background:rgba(224,92,92,0.12);color:var(--red);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">− removed</span>`
+      : `<span style="background:rgba(82,201,122,0.12);color:var(--green);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">✓ voted</span>`;
+    return `<tr style="${isUnvote?'opacity:0.6':''}">
+      <td>${actionBadge}</td>
       <td><div class="voter-name-cell">
         <div class="voter-display-name ${hasName?'':'anon'}">${hasName?v.voterName:'Anonymous'}</div>
         <div class="device-id" title="${v.deviceId}">${v.deviceId}</div>
