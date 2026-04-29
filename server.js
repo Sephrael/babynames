@@ -26,7 +26,9 @@ const DEFAULT_SETTINGS = {
   moderationEnabled: false,
   leaderboardCount:  5,
   tickerCount:       20,
-  tickerTemplate:    '{gender_emoji} {voter} → {name}',
+  tickerTemplateVote:    '{gender_emoji} {voter} voted for {name}',
+  tickerTemplateNominate:'✨ {gender_emoji} {voter} nominated {name} ✨',
+  tickerTemplateGender:  '{gender_emoji} {voter} thinks baby\'s a {gender}',
   tickerSpeed:       'normal',
   theme:             'sage',
   themePageBg:       '#C5D1B8',
@@ -109,7 +111,7 @@ app.get('/api/settings', async (req, res) => {
   const s = await getSettings();
   res.json({
     leaderboardCount: s.leaderboardCount, moderationEnabled: s.moderationEnabled,
-    tickerCount: s.tickerCount, tickerTemplate: s.tickerTemplate, tickerSpeed: s.tickerSpeed,
+    tickerCount: s.tickerCount, tickerTemplateVote: s.tickerTemplateVote, tickerTemplateNominate: s.tickerTemplateNominate, tickerTemplateGender: s.tickerTemplateGender, tickerSpeed: s.tickerSpeed,
     theme: s.theme, themePageBg: s.themePageBg, themeCardBg: s.themeCardBg, themeAccent: s.themeAccent,
     girlEmoji: s.girlEmoji, boyEmoji: s.boyEmoji,
   });
@@ -127,8 +129,8 @@ app.get('/api/recent-votes', async (req, res) => {
   try {
     const s     = await getSettings();
     const limit = Math.min(parseInt(req.query.limit) || s.tickerCount, 50);
-    const votes = await votesDb.find({ action: 'vote' }).sort({ votedAt: -1 });
-    res.json(votes.slice(0, limit).map(v => ({ voterName: v.voterName || 'A Guest', nameName: v.nameName, nameGender: v.nameGender, votedAt: v.votedAt })));
+    const votes = await votesDb.find({ action: { $in: ['vote', 'nominate', 'gender_vote'] } }).sort({ votedAt: -1 });
+    res.json(votes.slice(0, limit).map(v => ({ action: v.action, voterName: v.voterName || 'A Guest', nameName: v.nameName, nameGender: v.nameGender || v.gender, votedAt: v.votedAt })));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -330,12 +332,14 @@ app.delete(`/api/admin/${ADMIN_SECRET}/names/:id`, async (req, res) => {
 });
 
 app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
-  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplate, tickerSpeed, theme, themePageBg, themeCardBg, themeAccent, girlEmoji, boyEmoji } = req.body;
+  const { moderationEnabled, leaderboardCount, tickerCount, tickerTemplateVote, tickerTemplateNominate, tickerTemplateGender, tickerSpeed, theme, themePageBg, themeCardBg, themeAccent, girlEmoji, boyEmoji } = req.body;
   const patch = {};
   if (typeof moderationEnabled === 'boolean') patch.moderationEnabled = moderationEnabled;
   if (typeof leaderboardCount  === 'number' && leaderboardCount  >= 1  && leaderboardCount  <= 10) patch.leaderboardCount  = leaderboardCount;
   if (typeof tickerCount       === 'number' && tickerCount       >= 5  && tickerCount       <= 50) patch.tickerCount       = tickerCount;
-  if (typeof tickerTemplate    === 'string' && tickerTemplate.length   <= 200)                     patch.tickerTemplate    = tickerTemplate.trim();
+  if (typeof tickerTemplateVote    === 'string' && tickerTemplateVote.length   <= 200)                     patch.tickerTemplateVote    = tickerTemplateVote.trim();
+  if (typeof tickerTemplateNominate=== 'string' && tickerTemplateNominate.length<= 200)                     patch.tickerTemplateNominate= tickerTemplateNominate.trim();
+  if (typeof tickerTemplateGender  === 'string' && tickerTemplateGender.length <= 200)                     patch.tickerTemplateGender  = tickerTemplateGender.trim();
   if (['slow','normal','fast'].includes(tickerSpeed))                                               patch.tickerSpeed       = tickerSpeed;
   if (['classic','sage','custom'].includes(theme))                                                  patch.theme             = theme;
   if (typeof themePageBg === 'string' && /^#[0-9a-fA-F]{6}$/.test(themePageBg))                     patch.themePageBg       = themePageBg;
@@ -346,7 +350,7 @@ app.post(`/api/admin/${ADMIN_SECRET}/settings`, async (req, res) => {
   const updated = await saveSettings(patch);
   broadcast('settings', {
     leaderboardCount: updated.leaderboardCount, moderationEnabled: updated.moderationEnabled,
-    tickerCount: updated.tickerCount, tickerTemplate: updated.tickerTemplate, tickerSpeed: updated.tickerSpeed,
+    tickerCount: updated.tickerCount, tickerTemplateVote: updated.tickerTemplateVote, tickerTemplateNominate: updated.tickerTemplateNominate, tickerTemplateGender: updated.tickerTemplateGender, tickerSpeed: updated.tickerSpeed,
     theme: updated.theme, themePageBg: updated.themePageBg, themeCardBg: updated.themeCardBg, themeAccent: updated.themeAccent,
     girlEmoji: updated.girlEmoji, boyEmoji: updated.boyEmoji,
   });

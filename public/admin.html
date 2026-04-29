@@ -337,13 +337,39 @@
           <span class="var-chip" onclick="insertVar('{gender_emoji}')" title="🎀 for girl, 🧢 for boy">{gender_emoji}</span>
           <span class="var-chip" onclick="insertVar('{voter}')"       title="Voter's first name + last initial">{voter}</span>
           <span class="var-chip" onclick="insertVar('{name}')"        title="The baby name that was voted for">{name}</span>
+          <span class="var-chip" onclick="insertVar('{gender}')"      title="'girl' or 'boy'">{gender}</span>
         </div>
 
-        <textarea class="template-input" id="ticker-template" rows="2" maxlength="200" oninput="onTemplateInput()" placeholder="{gender_emoji} {voter} → {name}"></textarea>
+        <div style="display:flex; flex-direction:column; gap:0.8rem;">
+          <div>
+            <div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.3rem;">Voting for a name</div>
+            <textarea class="template-input" id="ticker-template-vote" rows="1" maxlength="200" onfocus="lastFocusedTemplate=this" oninput="onTemplateInput()" placeholder="{gender_emoji} {voter} voted for {name}"></textarea>
+          </div>
+          <div>
+            <div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.3rem;">Nominating a name</div>
+            <textarea class="template-input" id="ticker-template-nominate" rows="1" maxlength="200" onfocus="lastFocusedTemplate=this" oninput="onTemplateInput()" placeholder="✨ {gender_emoji} {voter} nominated {name} ✨"></textarea>
+          </div>
+          <div>
+            <div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.3rem;">Voting for a gender team</div>
+            <textarea class="template-input" id="ticker-template-gender" rows="1" maxlength="200" onfocus="lastFocusedTemplate=this" oninput="onTemplateInput()" placeholder="{gender_emoji} {voter} thinks baby's a {gender}"></textarea>
+          </div>
+        </div>
 
         <!-- Live preview using fake data -->
-        <div class="template-preview-label">Live preview</div>
-        <div class="template-preview" id="template-preview"></div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.8rem;">
+          <div>
+            <div class="template-preview-label" style="margin-top:0;">Preview (Vote)</div>
+            <div class="template-preview" id="template-preview-vote"></div>
+          </div>
+          <div>
+            <div class="template-preview-label" style="margin-top:0;">Preview (Nomination)</div>
+            <div class="template-preview" id="template-preview-nominate"></div>
+          </div>
+          <div>
+            <div class="template-preview-label" style="margin-top:0;">Preview (Gender Team)</div>
+            <div class="template-preview" id="template-preview-gender"></div>
+          </div>
+        </div>
 
         <!-- Usage guide -->
         <div style="margin-top:0.8rem;padding:0.8rem;background:var(--surface3);border-radius:8px;font-size:0.8rem;color:var(--muted);line-height:1.7;">
@@ -542,6 +568,7 @@ function stepCount(d){countVal=Math.max(1,Math.min(10,countVal+d));document.getE
 function stepTicker(d){tickerCountVal=Math.max(5,Math.min(50,tickerCountVal+d));document.getElementById('ticker-count-val').textContent=tickerCountVal;settingsDirty();}
 
 // ── Template preview ──────────────────────────────────────────────────────────
+let lastFocusedTemplate = null;
 const PREVIEW_VOTE={voterName:'Priya M.',nameName:'Ella',nameGender:'girl'};
 
 function renderTemplatePreview(template){
@@ -551,18 +578,24 @@ function renderTemplatePreview(template){
   return template
     .replace(/\{gender_emoji\}/g,genderEmoji)
     .replace(/\{voter\}/g,`<span class="t-voter">${PREVIEW_VOTE.voterName}</span>`)
-    .replace(/\{name\}/g,`<span class="t-name">${PREVIEW_VOTE.nameName}</span>`);
+    .replace(/\{name\}/g,`<span class="t-name">${PREVIEW_VOTE.nameName}</span>`)
+    .replace(/\{gender\}/g,`<span class="t-gender">${PREVIEW_VOTE.nameGender}</span>`);
 }
 
 function onTemplateInput(){
   settingsDirty();
-  const template=document.getElementById('ticker-template').value||'{gender_emoji} {voter} → {name}';
-  document.getElementById('template-preview').innerHTML=renderTemplatePreview(template);
+  const tmplVote=document.getElementById('ticker-template-vote').value||'{gender_emoji} {voter} voted for {name}';
+  const tmplNom=document.getElementById('ticker-template-nominate').value||'✨ {gender_emoji} {voter} nominated {name} ✨';
+  const tmplGen=document.getElementById('ticker-template-gender').value||'{gender_emoji} {voter} thinks baby\'s a {gender}';
+  document.getElementById('template-preview-vote').innerHTML=renderTemplatePreview(tmplVote);
+  document.getElementById('template-preview-nominate').innerHTML=renderTemplatePreview(tmplNom);
+  document.getElementById('template-preview-gender').innerHTML=renderTemplatePreview(tmplGen);
 }
 
 // Insert variable at cursor position in textarea
 function insertVar(varStr){
-  const ta=document.getElementById('ticker-template');
+  const ta=lastFocusedTemplate||document.getElementById('ticker-template-vote');
+  if(!ta) return;
   const start=ta.selectionStart,end=ta.selectionEnd;
   ta.value=ta.value.slice(0,start)+varStr+ta.value.slice(end);
   ta.selectionStart=ta.selectionEnd=start+varStr.length;
@@ -579,11 +612,15 @@ function applySettings(s){
   document.getElementById('moderation-toggle').checked=s.moderationEnabled;
   document.getElementById('moderation-label').textContent=s.moderationEnabled?'On — names need approval':'Off — names publish instantly';
   document.getElementById('ticker-speed').value=s.tickerSpeed||'normal';
-  const tmpl=s.tickerTemplate||'{gender_emoji} {voter} → {name}';
+  const tmplVote=s.tickerTemplateVote||s.tickerTemplate||'{gender_emoji} {voter} voted for {name}';
+  const tmplNom=s.tickerTemplateNominate||'✨ {gender_emoji} {voter} nominated {name} ✨';
+  const tmplGen=s.tickerTemplateGender||'{gender_emoji} {voter} thinks baby\'s a {gender}';
   document.getElementById('emoji-girl').value=s.girlEmoji||'🎀';
   document.getElementById('emoji-boy').value=s.boyEmoji||'🧢';
-  document.getElementById('ticker-template').value=tmpl;
-  document.getElementById('template-preview').innerHTML=renderTemplatePreview(tmpl);
+  document.getElementById('ticker-template-vote').value=tmplVote;
+  document.getElementById('ticker-template-nominate').value=tmplNom;
+  document.getElementById('ticker-template-gender').value=tmplGen;
+  onTemplateInput();
   // Theme
   selectedTheme=s.theme||'sage';
   applyThemeUI(s);
@@ -671,7 +708,9 @@ async function saveSettings(){
     moderationEnabled:document.getElementById('moderation-toggle').checked,
     leaderboardCount:countVal,
     tickerCount:tickerCountVal,
-    tickerTemplate:document.getElementById('ticker-template').value.trim()||'{gender_emoji} {voter} → {name}',
+    tickerTemplateVote:document.getElementById('ticker-template-vote').value.trim()||'{gender_emoji} {voter} voted for {name}',
+    tickerTemplateNominate:document.getElementById('ticker-template-nominate').value.trim()||'✨ {gender_emoji} {voter} nominated {name} ✨',
+    tickerTemplateGender:document.getElementById('ticker-template-gender').value.trim()||'{gender_emoji} {voter} thinks baby\'s a {gender}',
     tickerSpeed:document.getElementById('ticker-speed').value,
     theme:selectedTheme,
     girlEmoji:document.getElementById('emoji-girl').value.trim()||'🎀',

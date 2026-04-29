@@ -206,7 +206,7 @@
   .ticker-label{font-size:0.6rem;font-weight:500;letter-spacing:0.24em;text-transform:uppercase;color:var(--text-dark);opacity:0.3;white-space:nowrap;flex-shrink:0;}
   .ticker-wrap{flex:1;min-width:0;overflow:hidden;}
   .ticker-inner{display:inline-flex;white-space:nowrap;will-change:transform;}
-  .ticker-item{font-size:clamp(0.84rem,1.05vw,0.98rem);font-weight:500;color:var(--text-dark);opacity:0.62;display:inline-flex;align-items:center;gap:0.35rem;flex-shrink:0;}
+  .ticker-item{font-size:clamp(0.84rem,1.05vw,0.98rem);font-weight:500;color:var(--text-dark);display:inline-flex;align-items:center;gap:0.35rem;flex-shrink:0;text-shadow: -1px -1px 0 rgba(255,255,255,0.4), 1px -1px 0 rgba(255,255,255,0.4), -1px 1px 0 rgba(255,255,255,0.4), 1px 1px 0 rgba(255,255,255,0.4), 0px 2px 4px rgba(0,0,0,0.15);}
   .ticker-item .t-voter{font-weight:700;}
   .ticker-item .t-name{font-family:'Playfair Display',serif;font-style:italic;}
   @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
@@ -301,7 +301,7 @@ function showToast(msg){const el=document.getElementById('toast');el.textContent
 
 let prevData={girls:[],boys:[]},leaderboardCount=5;
 let girlEmoji='🎀', boyEmoji='🧢';
-let tickerSettings={count:20,template:'{gender_emoji} {voter} → {name}',speed:'normal'};
+let tickerSettings={count:20,templateVote:'{gender_emoji} {voter} voted for {name}',templateNominate:'✨ {gender_emoji} {voter} nominated {name} ✨',templateGender:'{gender_emoji} {voter} thinks baby\'s a {gender}',speed:'normal'};
 
 function applySizeForCount(n){
   const r=document.documentElement;
@@ -316,12 +316,18 @@ function applyTickerSpeed(speed){
   document.documentElement.style.setProperty('--ticker-duration',d[speed]||'32s');
 }
 
-function renderTickerItem(vote,template){
+function renderTickerItem(vote){
+  let template=tickerSettings.templateVote;
+  if(vote.action==='nominate') template=tickerSettings.templateNominate;
+  else if(vote.action==='gender_vote') template=tickerSettings.templateGender;
+  
   const g=vote.nameGender==='girl'?girlEmoji:boyEmoji;
+  const genderText=vote.nameGender||'baby';
   return template
     .replace(/\{gender_emoji\}/g,g)
     .replace(/\{voter\}/g,`<span class="t-voter">${vote.voterName}</span>`)
-    .replace(/\{name\}/g,`<span class="t-name">${vote.nameName}</span>`);
+    .replace(/\{name\}/g,`<span class="t-name">${vote.nameName||''}</span>`)
+    .replace(/\{gender\}/g,`<span class="t-gender">${genderText}</span>`);
 }
 
 function renderCol(colId,names,gender,prevNames){
@@ -376,7 +382,7 @@ async function updateTicker(){
     const tickerContainer=document.querySelector('.ticker-wrap');
     const tickerInner=document.getElementById('ticker');
     
-    const itemsHTML=votes.map(v=>`<span class="ticker-item">${renderTickerItem(v,tickerSettings.template)}</span>`).join('');
+    const itemsHTML=votes.reverse().map(v=>`<span class="ticker-item">${renderTickerItem(v)}</span>`).join('');
     
     const renderSeamless = () => {
       // 1. Measure natural width of the content without any extra padding
@@ -431,7 +437,7 @@ async function loadSettings(){
   const s=await(await fetch('/api/settings')).json();
   leaderboardCount=s.leaderboardCount;
   applySizeForCount(leaderboardCount);
-  tickerSettings={count:s.tickerCount||20,template:s.tickerTemplate||'{gender_emoji} {voter} → {name}',speed:s.tickerSpeed||'normal'};
+  tickerSettings={count:s.tickerCount||20,templateVote:s.tickerTemplateVote||s.tickerTemplate||'{gender_emoji} {voter} voted for {name}',templateNominate:s.tickerTemplateNominate||'✨ {gender_emoji} {voter} nominated {name} ✨',templateGender:s.tickerTemplateGender||'{gender_emoji} {voter} thinks baby\'s a {gender}',speed:s.tickerSpeed||'normal'};
   applyTickerSpeed(tickerSettings.speed);
   applyTheme(s);
 }
@@ -500,7 +506,7 @@ function connectSSE(){
     const s=JSON.parse(e.data);
     leaderboardCount=s.leaderboardCount;
     applySizeForCount(leaderboardCount);
-    tickerSettings={count:s.tickerCount||20,template:s.tickerTemplate||'{gender_emoji} {voter} → {name}',speed:s.tickerSpeed||'normal'};
+    tickerSettings={count:s.tickerCount||20,templateVote:s.tickerTemplateVote||s.tickerTemplate||'{gender_emoji} {voter} voted for {name}',templateNominate:s.tickerTemplateNominate||'✨ {gender_emoji} {voter} nominated {name} ✨',templateGender:s.tickerTemplateGender||'{gender_emoji} {voter} thinks baby\'s a {gender}',speed:s.tickerSpeed||'normal'};
     applyTickerSpeed(tickerSettings.speed);
     applyTheme(s);
     fetchAndRender(true);updateTicker();fetchGenderVotes();
