@@ -42,16 +42,20 @@
     text-align:center;
   }
 
-  /* Eyebrow — on large screens: one line. On small screens: wraps gracefully */
+  /* Eyebrow — on large screens: one line. On small screens: wraps gracefully.
+     Each phrase is nowrap so it never breaks mid-phrase. */
   .header-eyebrow{
     font-size:0.65rem;font-weight:400;letter-spacing:0.3em;text-transform:uppercase;
     color:var(--text-dark);opacity:0.38;margin-bottom:0.35rem;
-    /* On mobile, the QR is not shown so eyebrow can be full width */
+    line-height:1.7;
+  }
+  .header-eyebrow .phrase{
+    white-space:nowrap;display:inline;
   }
 
-  /* On screens where QR is visible, push title text away from right edge */
+  /* Push text away from QR on both sides to keep title visually centered */
   @media(min-width:560px){
-    .header-band{padding-right:clamp(90px,11vw,140px);}
+    .header-band{padding-left:clamp(90px,11vw,140px);padding-right:clamp(90px,11vw,140px);}
   }
 
   .header-title{
@@ -86,8 +90,12 @@
   }
   .header-qr:hover .qr-image{transform:scale(1.06);box-shadow:0 6px 24px rgba(212,168,83,0.18);}
 
-  /* Hide QR on very small screens — not useful to scan from a phone anyway */
-  @media(max-width:559px){.header-qr{display:none;} .header-band{padding-right:clamp(1rem,2vw,2rem);}}
+  /* On small screens: show QR but smaller, keep symmetric padding so title stays centered */
+  @media(max-width:559px){
+    .header-qr{right:0.5rem;}
+    .qr-image{width:52px;height:52px;padding:3px;border-radius:8px;}
+    .header-band{padding-left:60px;padding-right:60px;}
+  }
 
   /* ════════════════════════════════════════════════════
      MIDDLE — split
@@ -183,7 +191,7 @@
 
   <!-- HEADER: centered title, QR absolute right -->
   <header class="header-band">
-    <div class="header-eyebrow">Scan the QR code &nbsp;·&nbsp; Suggest a name &nbsp;·&nbsp; Cast your vote</div>
+    <div class="header-eyebrow"><span class="phrase">Scan the QR code</span> &nbsp;·&nbsp; <span class="phrase">Suggest a name</span> &nbsp;·&nbsp; <span class="phrase">Cast your vote</span></div>
     <h1 class="header-title">Vote for <span class="accent-pink">Baby's</span> <span class="accent-blue">Name</span></h1>
     <p class="header-sub">Every vote counts — let the best name win ✨</p>
     <!-- QR: absolute right, vertically centered, hidden below 560px -->
