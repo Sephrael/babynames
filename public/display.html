@@ -327,7 +327,13 @@ async function updateTicker(){
     if(!votes.length)return;
     const items=votes.map(v=>`<span class="ticker-item">${renderTickerItem(v,tickerSettings.template)}</span>`).join('');
     const ticker=document.getElementById('ticker');
-    ticker.innerHTML=items+items;
+    // Need enough items so the loop isn't obviously repetitive.
+    // We duplicate the set N times so there are at least ~8 visible items, then
+    // double the whole block once for the seamless infinite scroll reset.
+    const minVisible=8;
+    const repeats=Math.max(2,Math.ceil(minVisible/votes.length));
+    const block=items.repeat(repeats);
+    ticker.innerHTML=block+block;
   }catch(e){console.warn('Ticker fetch failed',e);}
 }
 

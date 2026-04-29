@@ -161,7 +161,7 @@
       </div>
       <div class="gate-error-msg" id="gate-error"></div>
     </div>
-    <button class="gate-btn" id="gate-btn" onclick="submitGate()">Let's Vote! ✨</button>
+    <button class="gate-btn" id="gate-btn" onclick="submitGate()">Let's Go! ✨</button>
 
   </div>
 </div>
@@ -444,13 +444,13 @@ document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key===
 
 // ─── Load / reload data ───────────────────────────────────────────────────────
 async function reloadVotesAndRender(){
-  const votesRes=await fetch(`/api/votes/${DEVICE_ID}`);
+  const votesRes=await fetch(`/api/votes/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`);
   myVotes=new Set(await votesRes.json());
   renderNames();
 }
 
 async function loadData(){
-  const[namesRes,votesRes]=await Promise.all([fetch('/api/names'),fetch(`/api/votes/${DEVICE_ID}`)]);
+  const[namesRes,votesRes]=await Promise.all([fetch('/api/names'),fetch(`/api/votes/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`)]);
   allNames=await namesRes.json();
   myVotes=new Set(await votesRes.json());
   renderNames();

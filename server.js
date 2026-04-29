@@ -170,12 +170,12 @@ app.post('/api/vote', async (req, res) => {
   const nameDoc = await namesDb.findOne({ _id: nameId, approved: true });
   if (!nameDoc) return res.status(404).json({ error: 'Name not found or not approved' });
 
-  // Check if this device already has an active vote for this name
-  const existingVote = await votesDb.findOne({ nameId, deviceId, action: 'vote' });
-  if (existingVote) return res.status(409).json({ error: 'Already voted for this name' });
-
-  // Resolve disambiguated voter name
+  // Resolve disambiguated voter name FIRST
   const resolvedName = await resolveVoterName(voterName, deviceId);
+
+  // Check if this specific user on this device already has an active vote for this name
+  const existingVote = await votesDb.findOne({ nameId, deviceId, voterName: resolvedName, action: 'vote' });
+  if (existingVote) return res.status(409).json({ error: 'Already voted for this name' });
 
   // Record vote action in history
   await votesDb.insert({
@@ -197,7 +197,8 @@ app.delete('/api/vote', async (req, res) => {
   const { nameId, deviceId, voterName } = req.body;
   if (!nameId || !deviceId) return res.status(400).json({ error: 'nameId and deviceId required' });
 
-  const existingVote = await votesDb.findOne({ nameId, deviceId, action: 'vote' });
+  const resolvedName = await resolveVoterName(voterName, deviceId);
+  const existingVote = await votesDb.findOne({ nameId, deviceId, voterName: resolvedName, action: 'vote' });
   if (!existingVote) return res.status(404).json({ error: 'Vote not found' });
 
   // Mark the original vote as removed
@@ -217,10 +218,14 @@ app.delete('/api/vote', async (req, res) => {
   res.json({ success: true, votes: Math.max(0, updated.votes) });
 });
 
-// ─── Public: active votes for a device ───────────────────────────────────────
+// ─── Public: active votes for a device and user ─────────────────────────────
 app.get('/api/votes/:deviceId', async (req, res) => {
-  // Only return nameIds with an active 'vote' action (not unvoted)
-  const votes = await votesDb.find({ deviceId: req.params.deviceId, action: 'vote' });
+  // Only return nameIds with an active 'vote' action (not unvoted) for this specific user
+  const { voterName } = req.query;
+  const resolvedName = voterName ? await resolveVoterName(voterName, req.params.deviceId) : null;
+  const query = { deviceId: req.params.deviceId, action: 'vote' };
+  if (resolvedName) query.voterName = resolvedName;
+  const votes = await votesDb.find(query);
   res.json(votes.map(v => v.nameId));
 });
 
