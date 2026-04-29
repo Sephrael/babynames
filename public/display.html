@@ -217,7 +217,7 @@
     
     <!-- GENDER POLL -->
     <div class="poll-container">
-      <div class="poll-title">Prediction Poll</div>
+      <div class="poll-title">Prediction Poll <span id="poll-title-votes" style="text-transform:lowercase; opacity:0.8; font-weight:500;">(0 total votes)</span></div>
       <div class="poll-bar-wrapper">
         <div class="poll-side poll-girl" style="width: 50%">
           <span class="poll-label"><span class="emoji-girl">🎀</span> 50%</span>
@@ -462,6 +462,7 @@ async function fetchGenderVotes() {
     if (total === 0) {
       document.querySelector('.poll-girl').style.width = '50%';
       document.querySelector('.poll-boy').style.width = '50%';
+      document.getElementById('poll-title-votes').textContent = '(0 total votes)';
       document.querySelector('.poll-girl .poll-label').innerHTML = `<span class="emoji-girl">${girlEmoji}</span> 50%`;
       document.querySelector('.poll-boy .poll-label').innerHTML = `50% <span class="emoji-boy">${boyEmoji}</span>`;
       return;
@@ -470,6 +471,7 @@ async function fetchGenderVotes() {
     const boyPct = 100 - girlPct;
     document.querySelector('.poll-girl').style.width = girlPct + '%';
     document.querySelector('.poll-boy').style.width = boyPct + '%';
+    document.getElementById('poll-title-votes').textContent = `(${total} total vote${total === 1 ? '' : 's'})`;
     document.querySelector('.poll-girl .poll-label').innerHTML = `<span class="emoji-girl">${girlEmoji}</span> ${girlPct}%`;
     document.querySelector('.poll-boy .poll-label').innerHTML = `${boyPct}% <span class="emoji-boy">${boyEmoji}</span>`;
   } catch (e) {

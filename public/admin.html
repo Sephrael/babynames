@@ -18,20 +18,31 @@
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
   /* ── TOPBAR ── */
-  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:50;}
-  .topbar-title-wrapper{display:flex;align-items:center;gap:0.7rem;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1.5rem;}
+  .topbar-title-wrapper{display:flex;align-items:center;gap:0.7rem;flex-shrink:0;}
   .topbar-icon{font-size:1.4rem;}
   .topbar-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;font-style:italic;}
   .title-gradient{background: linear-gradient(to right, var(--pink) 10%, var(--pink) 38%, var(--blue) 62%, var(--blue) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--gold);}
-  .topbar-actions{position:absolute;right:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;}
   
-  @media(max-width:850px){
-    .topbar{justify-content:flex-start;}
-    .topbar-actions{position:static;margin-left:auto;}
+  .topbar-stats { display: flex; gap: 0.8rem; align-items: center; justify-content: center; flex: 1; flex-wrap: wrap; }
+  .ts-group { display: flex; align-items: center; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+  .ts-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.35rem 0.8rem; border-right: 1px solid var(--border); min-width: 65px; cursor: default; }
+  .ts-item:last-child { border-right: none; }
+  .ts-item-lbl { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 0.15rem; white-space: nowrap; transition: opacity 0.2s; }
+  .ts-val { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; line-height: 1; }
+  .ts-val-combo { display: flex; align-items: center; gap: 0.25rem; }
+  .ts-slash { color: rgba(255,255,255,0.2); font-size: 0.9rem; font-weight: 400; }
+  .ts-val.pink{color:var(--pink);}.ts-val.blue{color:var(--blue);}.ts-val.gold{color:var(--gold);}.ts-val.green{color:var(--green);}.ts-val.amber{color:var(--amber);}
+
+  .topbar-actions{display:flex;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;}
+  
+  @media(max-width:1250px){
+    .ts-item-lbl { display: none; }
+    .ts-item { padding: 0.35rem 0.6rem; min-width: 40px; }
   }
-  @media(max-width:550px){
-    .topbar{flex-direction:column;align-items:flex-start;gap:1rem;}
-    .topbar-actions{margin-left:0;width:100%;}
+  @media(max-width:1050px){
+    .topbar{flex-wrap:wrap;}
+    .topbar-stats{order:3;width:100%;justify-content:flex-start;}
   }
 
   /* ── BUTTONS ── */
@@ -46,12 +57,7 @@
   /* ── LAYOUT ── */
   .page{max-width:1300px;margin:0 auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.5rem;}
 
-  /* ── STATS ── */
-  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.8rem;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;}
-  .stat-label{font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;}
-  .stat-value{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;line-height:1;}
-  .stat-value.pink{color:var(--pink);}.stat-value.blue{color:var(--blue);}.stat-value.gold{color:var(--gold);}.stat-value.green{color:var(--green);}.stat-value.amber{color:var(--amber);}
+
 
   /* ── SETTINGS PANEL ── */
   .settings-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
@@ -211,6 +217,49 @@
     <span class="topbar-icon">🍼</span>
     <span class="topbar-title"><span class="title-gradient">Baby Ballot Box</span> Admin</span>
   </div>
+
+  <div class="topbar-stats">
+    <!-- Names Category -->
+    <div class="ts-group">
+      <div class="ts-item" title="Total Name Votes">
+        <span class="ts-val gold" id="stat-total">0</span>
+        <span class="ts-item-lbl">Total Votes</span>
+      </div>
+      <div class="ts-item" title="Girl Votes / Unique Names">
+        <div class="ts-val-combo"><span class="ts-val pink" id="stat-girl">0</span> <span class="ts-slash">/</span> <span class="ts-val pink" id="stat-girl-names">0</span></div>
+        <span class="ts-item-lbl">Girl Votes/Names</span>
+      </div>
+      <div class="ts-item" title="Boy Votes / Unique Names">
+        <div class="ts-val-combo"><span class="ts-val blue" id="stat-boy">0</span> <span class="ts-slash">/</span> <span class="ts-val blue" id="stat-boy-names">0</span></div>
+        <span class="ts-item-lbl">Boy Votes/Names</span>
+      </div>
+      <div class="ts-item" title="Unique Voters">
+        <span class="ts-val green" id="stat-voters">0</span>
+        <span class="ts-item-lbl">Unique Voters</span>
+      </div>
+      <div class="ts-item" title="Pending Name Approvals">
+        <span class="ts-val amber" id="stat-pending">0</span>
+        <span class="ts-item-lbl">Pending Names</span>
+      </div>
+    </div>
+
+    <!-- Gender Teams Category -->
+    <div class="ts-group">
+      <div class="ts-item" title="Total Poll Votes">
+        <span class="ts-val gold" id="stat-gender-total">0</span>
+        <span class="ts-item-lbl">Total Votes</span>
+      </div>
+      <div class="ts-item" title="Team Girl Votes">
+        <span class="ts-val pink" id="stat-gender-girl">0</span>
+        <span class="ts-item-lbl">Team Girl</span>
+      </div>
+      <div class="ts-item" title="Team Boy Votes">
+        <span class="ts-val blue" id="stat-gender-boy">0</span>
+        <span class="ts-item-lbl">Team Boy</span>
+      </div>
+    </div>
+  </div>
+
   <div class="topbar-actions">
     <button class="btn btn-primary" onclick="exportCsv()">📥 Export CSV</button>
     <button class="btn btn-danger"  onclick="confirmReset()">🗑️ Reset All</button>
@@ -218,17 +267,6 @@
 </div>
 
 <div class="page">
-
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">Total Votes</div><div class="stat-value gold"  id="stat-total">—</div></div>
-    <div class="stat-card"><div class="stat-label">Girl Votes</div> <div class="stat-value pink"  id="stat-girl">—</div></div>
-    <div class="stat-card"><div class="stat-label">Boy Votes</div>  <div class="stat-value blue"  id="stat-boy">—</div></div>
-    <div class="stat-card"><div class="stat-label">Girl Names</div> <div class="stat-value pink"  id="stat-girl-names">—</div></div>
-    <div class="stat-card"><div class="stat-label">Boy Names</div>  <div class="stat-value blue"  id="stat-boy-names">—</div></div>
-    <div class="stat-card"><div class="stat-label">Unique Voters</div><div class="stat-value green" id="stat-voters">—</div></div>
-    <div class="stat-card"><div class="stat-label">Pending</div>    <div class="stat-value amber" id="stat-pending">—</div></div>
-  </div>
 
   <!-- Settings -->
   <div class="settings-panel">
@@ -667,16 +705,19 @@ async function saveSettings(){
 }
 
 // ── Load data ─────────────────────────────────────────────────────────────────
+let adminGenderVotes = { boy: 0, girl: 0 };
 async function loadAll(){
-  const[namesRes,votesRes,pendingRes,settingsRes]=await Promise.all([
+  const[namesRes,votesRes,pendingRes,settingsRes,genderRes]=await Promise.all([
     fetch(`/api/admin/${SECRET}/names`),
     fetch(`/api/admin/${SECRET}/votes`),
     fetch(`/api/admin/${SECRET}/pending`),
     fetch(`/api/admin/${SECRET}/settings`),
+    fetch(`/api/gender-votes`)
   ]);
   allNames=(await namesRes.json()).filter(n => n.approved);
   allVotes=await votesRes.json();
   pendingNames=await pendingRes.json();
+  adminGenderVotes=await genderRes.json();
   applySettings(await settingsRes.json());
   render();
 }
@@ -693,6 +734,11 @@ function render(){
   document.getElementById('stat-boy').textContent=boyVotes;
   document.getElementById('stat-girl-names').textContent=girls.length;
   document.getElementById('stat-boy-names').textContent=boys.length;
+  
+  document.getElementById('stat-gender-total').textContent = adminGenderVotes.girl + adminGenderVotes.boy;
+  document.getElementById('stat-gender-girl').textContent = adminGenderVotes.girl;
+  document.getElementById('stat-gender-boy').textContent = adminGenderVotes.boy;
+
   document.getElementById('stat-voters').textContent=uniqueDevices;
   document.getElementById('stat-pending').textContent=pendingNames.length;
   document.getElementById('girl-badge').textContent=girls.length;
