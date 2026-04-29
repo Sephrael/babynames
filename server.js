@@ -8,7 +8,7 @@ const fs        = require('fs');
 
 const app          = express();
 const PORT         = process.env.PORT         || 3000;
-const BASE_URL     = process.env.BASE_URL     || 'https://baby.yourdomain.com';
+const BASE_URL     = process.env.BASE_URL     || 'http://localhost:3000';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'babyshower2026';
 
 // ─── Databases ────────────────────────────────────────────────────────────────
@@ -229,6 +229,66 @@ app.get('/api/votes/:deviceId', async (req, res) => {
   res.json(votes.map(v => v.nameId));
 });
 
+// ─── Public: gender prediction ──────────────────────────────────────────────
+app.post('/api/gender-vote', async (req, res) => {
+  const { gender, deviceId, voterName } = req.body;
+  if (!gender || !deviceId) return res.status(400).json({ error: 'gender and deviceId required' });
+
+  const resolvedName = await resolveVoterName(voterName, deviceId);
+  const existingVote = await votesDb.findOne({ deviceId, voterName: resolvedName, action: 'gender_vote' });
+
+  if (existingVote && existingVote.gender === gender) return res.json({ success: true });
+
+  if (existingVote) {
+    await votesDb.update({ _id: existingVote._id }, { $set: { action: 'gender_unvote', removedAt: new Date() } });
+    await votesDb.insert({ gender: existingVote.gender, deviceId, voterName: resolvedName, action: 'gender_unvote', votedAt: new Date() });
+  }
+
+  await votesDb.insert({
+    gender, deviceId, voterName: resolvedName,
+    action: 'gender_vote', votedAt: new Date()
+  });
+
+  broadcast('update', { ts: Date.now() });
+  res.json({ success: true, resolvedVoterName: resolvedName });
+});
+
+app.delete('/api/gender-vote', async (req, res) => {
+  const { deviceId, voterName } = req.body;
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' });
+
+  const resolvedName = await resolveVoterName(voterName, deviceId);
+  const existingVote = await votesDb.findOne({ deviceId, voterName: resolvedName, action: 'gender_vote' });
+
+  if (existingVote) {
+    await votesDb.update({ _id: existingVote._id }, { $set: { action: 'gender_unvote', removedAt: new Date() } });
+    await votesDb.insert({ gender: existingVote.gender, deviceId, voterName: resolvedName, action: 'gender_unvote', votedAt: new Date() });
+    broadcast('update', { ts: Date.now() });
+  }
+
+  res.json({ success: true });
+});
+
+app.get('/api/gender-votes', async (req, res) => {
+  const votes = await votesDb.find({ action: 'gender_vote' });
+  let boy = 0, girl = 0;
+  for (const v of votes) {
+    if (v.gender === 'boy') boy++;
+    else if (v.gender === 'girl') girl++;
+  }
+  res.json({ boy, girl });
+});
+
+app.get('/api/my-gender-vote/:deviceId', async (req, res) => {
+  const { voterName } = req.query;
+  const resolvedName = voterName ? await resolveVoterName(voterName, req.params.deviceId) : null;
+  const query = { deviceId: req.params.deviceId, action: 'gender_vote' };
+  if (resolvedName) query.voterName = resolvedName;
+  const vote = await votesDb.findOne(query);
+  res.json({ gender: vote ? vote.gender : null });
+});
+
+
 // ─── Public: QR code ──────────────────────────────────────────────────────────
 app.get('/api/qr', async (req, res) => {
   try {
@@ -302,9 +362,13 @@ app.get(`/api/admin/${ADMIN_SECRET}/export`, async (req, res) => {
   names.forEach(n => { nameMap[n._id] = n; });
   let csv = 'Action,Voter Name,Baby Name,Gender,Nominated By,Device ID,Time\n';
   votes.forEach(v => {
+    const isGenderVote = v.action === 'gender_vote' || v.action === 'gender_unvote';
     const nom = nameMap[v.nameId];
     const nominatedBy = nom && nom.submittedBy ? nom.submittedBy : '';
-    csv += `"${v.action||'vote'}","${v.voterName||'Anonymous'}","${v.nameName}","${v.nameGender}","${nominatedBy}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
+    const targetName = isGenderVote ? 'Gender Prediction' : (v.nameName || '');
+    const targetGender = isGenderVote ? v.gender : (v.nameGender || '');
+    
+    csv += `"${v.action||'vote'}","${v.voterName||'Anonymous'}","${targetName}","${targetGender}","${nominatedBy}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
   });
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="baby-name-votes.csv"');

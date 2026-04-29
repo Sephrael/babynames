@@ -58,6 +58,22 @@
   .hero::before{content:'💕  🍼  ⭐  💙  ✨  💗  🌸  🐋';position:absolute;top:0;left:-100%;font-size:1.2rem;opacity:0.12;white-space:nowrap;animation:hero-scroll 18s linear infinite;letter-spacing:1.5rem;}
   @keyframes hero-scroll{to{left:100%}}
   .hero-top{display:flex;align-items:center;justify-content:center;gap:0.8rem;margin-bottom:0.3rem;flex-wrap:wrap;}
+  .hero-icon{font-size:2.4rem;animation:bounce 2s infinite ease-in-out;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;}
+  .hero .pink{color:var(--pink-deep);}.hero .blue{color:var(--blue-deep);}
+  .hero-sub{font-size:0.9rem;opacity:0.7;margin-bottom:1rem;font-weight:600;}
+  
+  /* ── PREDICTION POLL ── */
+  .predict-card{background:var(--theme-card-bg);border:1px solid var(--theme-border);border-radius:var(--radius);padding:1.5rem;text-align:center;margin-bottom:1.5rem;box-shadow:0 4px 16px rgba(0,0,0,0.04);}
+  .predict-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--text);margin-bottom:1rem;}
+  .predict-actions{display:flex;gap:1rem;justify-content:center;}
+  .predict-btn{flex:1;border:2px solid var(--theme-border);border-radius:14px;padding:0.8rem;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;background:rgba(255,255,255,0.5);color:var(--text);transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+  .predict-btn.girl{border-color:rgba(242,160,184,0.3);}
+  .predict-btn.boy{border-color:rgba(143,198,238,0.3);}
+  .predict-btn.girl:hover{background:var(--pink-pale);border-color:var(--pink);}
+  .predict-btn.boy:hover{background:var(--blue-pale);border-color:var(--blue);}
+  .predict-btn.girl.selected{background:linear-gradient(135deg,var(--pink-pale),var(--pink-bg));border-color:var(--pink-deep);box-shadow:0 4px 12px rgba(242,160,184,0.3);}
+  .predict-btn.boy.selected{background:linear-gradient(135deg,var(--blue-pale),var(--blue-bg));border-color:var(--blue-deep);box-shadow:0 4px 12px rgba(143,198,238,0.3);}
   .hero-icon{font-size:1.8rem;animation:bounce 2s ease-in-out infinite;}
   .hero h1{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;color:var(--text);line-height:1.15;}
   .hero h1 .pink{color:var(--pink-deep);}.hero h1 .blue{color:var(--blue-deep);}
@@ -189,6 +205,15 @@
 </div>
 
 <div class="content">
+  <!-- GENDER PREDICTION -->
+  <div class="predict-card" id="predict-card">
+    <div class="predict-title">What's your prediction?</div>
+    <div class="predict-actions">
+      <button class="predict-btn girl" id="predict-btn-girl" onclick="castGenderVote('girl')">🎀 Team Girl</button>
+      <button class="predict-btn boy" id="predict-btn-boy" onclick="castGenderVote('boy')">🐋 Team Boy</button>
+    </div>
+  </div>
+
   <div class="suggest-card">
     <div class="suggest-title"><span>✍️</span> Suggest a Name</div>
     <div class="gender-toggle">
@@ -331,6 +356,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 // ─── App state ────────────────────────────────────────────────────────────────
 let allNames=[],myVotes=new Set(),selectedGender='girl',submitting=false;
+let myGenderVote=null;
 
 function selectGender(g){
   selectedGender=g;
@@ -350,8 +376,8 @@ function switchTab(tab){
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 function renderNames(){
-  const girls=allNames.filter(n=>n.gender==='girl').sort((a,b)=>b.votes-a.votes);
-  const boys=allNames.filter(n=>n.gender==='boy').sort((a,b)=>b.votes-a.votes);
+  const girls=allNames.filter(n=>n.gender==='girl').sort((a,b)=>a.name.localeCompare(b.name));
+  const boys=allNames.filter(n=>n.gender==='boy').sort((a,b)=>a.name.localeCompare(b.name));
   renderList('girl-list-all',girls,'girl');renderList('boy-list-all',boys,'boy');
   renderList('girl-list-tab',girls,'girl');renderList('boy-list-tab',boys,'boy');
   document.getElementById('girl-count-all').textContent=girls.length;
@@ -444,16 +470,65 @@ document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key===
 
 // ─── Load / reload data ───────────────────────────────────────────────────────
 async function reloadVotesAndRender(){
-  const votesRes=await fetch(`/api/votes/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`);
+  const[votesRes,genderRes]=await Promise.all([
+    fetch(`/api/votes/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`),
+    fetch(`/api/my-gender-vote/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`)
+  ]);
   myVotes=new Set(await votesRes.json());
+  const genderData = await genderRes.json();
+  myGenderVote = genderData.gender;
+  updateGenderVoteUI();
   renderNames();
 }
 
 async function loadData(){
-  const[namesRes,votesRes]=await Promise.all([fetch('/api/names'),fetch(`/api/votes/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`)]);
+  const[namesRes,votesRes,genderRes]=await Promise.all([
+    fetch('/api/names'),
+    fetch(`/api/votes/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`),
+    fetch(`/api/my-gender-vote/${DEVICE_ID}?voterName=${encodeURIComponent(VOTER_NAME)}`)
+  ]);
   allNames=await namesRes.json();
   myVotes=new Set(await votesRes.json());
+  
+  const genderData = await genderRes.json();
+  myGenderVote = genderData.gender;
+  updateGenderVoteUI();
+
   renderNames();
+}
+
+// ─── Gender Prediction Vote ───────────────────────────────────────────────────
+function updateGenderVoteUI() {
+  const btnGirl = document.getElementById('predict-btn-girl');
+  const btnBoy = document.getElementById('predict-btn-boy');
+  btnGirl.classList.remove('selected');
+  btnBoy.classList.remove('selected');
+  if (myGenderVote === 'girl') btnGirl.classList.add('selected');
+  if (myGenderVote === 'boy') btnBoy.classList.add('selected');
+}
+
+async function castGenderVote(gender) {
+  const isUnvote = myGenderVote === gender;
+  myGenderVote = isUnvote ? null : gender;
+  updateGenderVoteUI();
+
+  if (!isUnvote) {
+    // Add simple confetti burst for fun feedback
+    if(typeof launchConfetti === 'function') {
+      if (gender === 'girl') launchConfetti(['#f9b8c8','#fde8ee','#e8849a']);
+      else launchConfetti(['#a8d4f5','#ddf0ff','#6aaee0']);
+    }
+  }
+
+  try {
+    const method = isUnvote ? 'DELETE' : 'POST';
+    await fetch('/api/gender-vote', {
+      method, headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ gender, deviceId: DEVICE_ID, voterName: VOTER_NAME })
+    });
+  } catch (e) {
+    console.error('Failed to cast gender vote', e);
+  }
 }
 
 // ─── Theme ────────────────────────────────────────────────────────────────────

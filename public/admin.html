@@ -718,7 +718,7 @@ function setFilter(f,btn){
 }
 
 function renderVoteLog(){
-  const filtered=voteFilter==='all'?allVotes:allVotes.filter(v=>v.nameGender===voteFilter);
+  const filtered=voteFilter==='all'?allVotes:allVotes.filter(v=>v.nameGender===voteFilter || v.gender===voteFilter);
   document.getElementById('vote-log-badge').textContent=filtered.length;
   const tbody=document.getElementById('vote-log');
   if(!filtered.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="5">No votes yet</td></tr>`;return;}
@@ -726,24 +726,32 @@ function renderVoteLog(){
     const dt=new Date(v.votedAt);
     const timeStr=dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     const hasName=v.voterName&&v.voterName.trim();
-    const isUnvote=v.action==='unvote';
+    const isUnvote=v.action==='unvote' || v.action==='gender_unvote';
     const isNominate=v.action==='nominate';
+    const isGenderVote=v.action==='gender_vote' || v.action==='gender_unvote';
+
     let actionBadge;
     if(isNominate){
       actionBadge=`<span style="background:rgba(212,168,83,0.15);color:var(--gold);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">✦ nominated</span>`;
     } else if(isUnvote){
       actionBadge=`<span style="background:rgba(224,92,92,0.12);color:var(--red);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">− removed</span>`;
+    } else if(isGenderVote){
+      actionBadge=`<span style="background:rgba(143,198,238,0.15);color:var(--blue-deep);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">🔮 predicted</span>`;
     } else {
       actionBadge=`<span style="background:rgba(82,201,122,0.12);color:var(--green);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">✓ voted</span>`;
     }
+
+    const targetName = isGenderVote ? 'Gender Prediction' : v.nameName;
+    const targetGender = isGenderVote ? v.gender : v.nameGender;
+
     return `<tr style="${isUnvote?'opacity:0.6':''}">
       <td>${actionBadge}</td>
       <td><div class="voter-name-cell">
         <div class="voter-display-name ${hasName?'':'anon'}">${hasName?v.voterName:'Anonymous'}</div>
         <div class="device-id" title="${v.deviceId}">${v.deviceId}</div>
       </div></td>
-      <td style="font-weight:600">${v.nameName}</td>
-      <td><span class="gender-tag ${v.nameGender}">${v.nameGender==='girl'?'🎀 Girl':'🐋 Boy'}</span></td>
+      <td style="font-weight:600">${targetName}</td>
+      <td><span class="gender-tag ${targetGender}">${targetGender==='girl'?'🎀 Girl':'🐋 Boy'}</span></td>
       <td><span class="timestamp">${timeStr}</span></td>
     </tr>`;
   }).join('');
