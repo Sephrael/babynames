@@ -162,7 +162,7 @@
   @media(max-width:899px){.col{overflow:visible;min-height:unset;padding-bottom:0.8rem;}}
 
   /* Name card */
-  .name-card{display:flex;align-items:center;gap:clamp(0.6rem,1.1vw,1rem);padding:var(--card-pad-v) clamp(0.7rem,1.3vw,1.3rem);border-radius:clamp(10px,1.4vw,18px);position:relative;overflow:hidden;opacity:0;transform:translateY(22px);transition:opacity 0.45s ease,transform 0.45s ease;will-change:transform,opacity;flex-shrink:0;}
+  .name-card{display:flex;align-items:center;gap:clamp(0.6rem,1.1vw,1rem);padding:var(--card-pad-v) clamp(0.7rem,1.3vw,1.3rem);border-radius:clamp(10px,1.4vw,18px);position:relative;overflow:hidden;opacity:0;transform:translateY(22px);transition:opacity 0.45s ease,transform 0.45s ease;will-change:transform,opacity;flex:1 1 0%;min-height:0;max-height:var(--card-max-h, 85px);}
   .name-card.visible{opacity:1;transform:translateY(0);}
   .name-card.girl{background:linear-gradient(135deg,rgba(255,255,255,0.88),rgba(249,184,200,0.32));border:1.5px solid rgba(232,132,154,0.22);box-shadow:0 4px 20px rgba(232,132,154,0.1),0 1px 4px rgba(0,0,0,0.05);}
   .name-card.boy{background:linear-gradient(135deg,rgba(255,255,255,0.88),rgba(168,212,245,0.32));border:1.5px solid rgba(106,174,224,0.22);box-shadow:0 4px 20px rgba(106,174,224,0.1),0 1px 4px rgba(0,0,0,0.05);}
@@ -305,10 +305,34 @@ let tickerSettings={count:20,templateVote:'{gender_emoji} {voter} voted for {nam
 
 function applySizeForCount(n){
   const r=document.documentElement;
-  if(n<=3){r.style.setProperty('--name-font','clamp(1.6rem,2.8vw,2.4rem)');r.style.setProperty('--count-font','clamp(1.9rem,3.2vw,2.8rem)');r.style.setProperty('--card-pad-v','1.3rem');r.style.setProperty('--card-gap','1.1rem');}
-  else if(n<=5){r.style.setProperty('--name-font','clamp(1.35rem,2.2vw,1.85rem)');r.style.setProperty('--count-font','clamp(1.6rem,2.6vw,2.2rem)');r.style.setProperty('--card-pad-v','1rem');r.style.setProperty('--card-gap','0.85rem');}
-  else if(n<=7){r.style.setProperty('--name-font','clamp(1.1rem,1.8vw,1.5rem)');r.style.setProperty('--count-font','clamp(1.3rem,2vw,1.8rem)');r.style.setProperty('--card-pad-v','0.75rem');r.style.setProperty('--card-gap','0.6rem');}
-  else{r.style.setProperty('--name-font','clamp(0.95rem,1.5vw,1.3rem)');r.style.setProperty('--count-font','clamp(1.1rem,1.7vw,1.55rem)');r.style.setProperty('--card-pad-v','0.6rem');r.style.setProperty('--card-gap','0.45rem');}
+  if(n<=3){
+    r.style.setProperty('--name-font','clamp(1.4rem, min(2.8vw, 4.5vh), 2.4rem)');
+    r.style.setProperty('--count-font','clamp(1.6rem, min(3.2vw, 5vh), 2.8rem)');
+    r.style.setProperty('--card-pad-v','min(1.3rem, 3vh)');
+    r.style.setProperty('--card-gap','min(1.1rem, 2.5vh)');
+    r.style.setProperty('--card-max-h','110px');
+  }
+  else if(n<=5){
+    r.style.setProperty('--name-font','clamp(1.2rem, min(2.2vw, 3.5vh), 1.85rem)');
+    r.style.setProperty('--count-font','clamp(1.4rem, min(2.6vw, 4vh), 2.2rem)');
+    r.style.setProperty('--card-pad-v','min(1rem, 2vh)');
+    r.style.setProperty('--card-gap','min(0.85rem, 1.5vh)');
+    r.style.setProperty('--card-max-h','85px');
+  }
+  else if(n<=7){
+    r.style.setProperty('--name-font','clamp(1rem, min(1.8vw, 2.8vh), 1.5rem)');
+    r.style.setProperty('--count-font','clamp(1.1rem, min(2vw, 3.2vh), 1.8rem)');
+    r.style.setProperty('--card-pad-v','min(0.75rem, 1.5vh)');
+    r.style.setProperty('--card-gap','min(0.6rem, 1.2vh)');
+    r.style.setProperty('--card-max-h','70px');
+  }
+  else{
+    r.style.setProperty('--name-font','clamp(0.85rem, min(1.5vw, 2.2vh), 1.3rem)');
+    r.style.setProperty('--count-font','clamp(1rem, min(1.7vw, 2.6vh), 1.55rem)');
+    r.style.setProperty('--card-pad-v','min(0.6rem, 1.2vh)');
+    r.style.setProperty('--card-gap','min(0.45rem, 0.8vh)');
+    r.style.setProperty('--card-max-h','55px');
+  }
 }
 
 function applyTickerSpeed(speed){
