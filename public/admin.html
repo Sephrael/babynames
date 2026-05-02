@@ -504,7 +504,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Action</th><th>Voter</th><th>Baby Name</th><th>Gender</th><th>Time</th></tr></thead>
+        <thead><tr><th>Action</th><th>Voter</th><th>Baby Name</th><th>Gender</th><th>Time</th><th style="text-align:right">Rollback</th></tr></thead>
         <tbody id="vote-log"></tbody>
       </table>
     </div>
@@ -840,7 +840,7 @@ function renderVoteLog(){
   const filtered=voteFilter==='all'?allVotes:allVotes.filter(v=>v.nameGender===voteFilter || v.gender===voteFilter);
   document.getElementById('vote-log-badge').textContent=filtered.length;
   const tbody=document.getElementById('vote-log');
-  if(!filtered.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="5">No votes yet</td></tr>`;return;}
+  if(!filtered.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="6">No votes yet</td></tr>`;return;}
   tbody.innerHTML=filtered.map(v=>{
     const dt=new Date(v.votedAt);
     const timeStr=dt.toLocaleDateString()+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
@@ -848,10 +848,16 @@ function renderVoteLog(){
     const isUnvote=v.action==='unvote' || v.action==='gender_unvote';
     const isNominate=v.action==='nominate';
     const isGenderVote=v.action==='gender_vote' || v.action==='gender_unvote';
+    const isUserSwitch=v.action==='user_switch';
+    const isCleared=v.action==='vote_cleared_switch' || v.action==='gender_vote_cleared_switch';
 
     let actionBadge;
     if(isNominate){
       actionBadge=`<span style="background:rgba(212,168,83,0.15);color:var(--gold);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">✦ nominated</span>`;
+    } else if(isUserSwitch){
+      actionBadge=`<span style="background:rgba(139,92,246,0.15);color:#a78bfa;font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">⇄ user switch</span>`;
+    } else if(isCleared){
+      actionBadge=`<span style="background:rgba(150,150,150,0.12);color:var(--muted);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">✕ cleared</span>`;
     } else if(isUnvote){
       actionBadge=`<span style="background:rgba(224,92,92,0.12);color:var(--red);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">− removed</span>`;
     } else if(isGenderVote){
@@ -860,10 +866,23 @@ function renderVoteLog(){
       actionBadge=`<span style="background:rgba(82,201,122,0.12);color:var(--green);font-size:0.72rem;font-weight:700;padding:0.12rem 0.5rem;border-radius:4px;white-space:nowrap;">✓ voted</span>`;
     }
 
-    const targetName = isGenderVote ? 'Gender Prediction' : v.nameName;
-    const targetGender = isGenderVote ? v.gender : v.nameGender;
+    let targetName, targetGender;
+    if(isUserSwitch){
+      targetName = `<span style="color:var(--muted);font-size:0.82rem;">${v.voterName} → ${v.newVoterName||'?'}<br><span style="font-size:0.72rem;opacity:0.7;">Cleared ${v.clearedVotes||0} vote${v.clearedVotes!==1?'s':''}, ${v.clearedGenderVotes||0} gender vote${v.clearedGenderVotes!==1?'s':''}</span></span>`;
+      targetGender = '—';
+    } else if(isCleared){
+      targetName = v.action==='gender_vote_cleared_switch' ? 'Gender Prediction' : (v.nameName||'—');
+      targetGender = v.nameGender || v.gender || '';
+    } else if(isGenderVote){
+      targetName = 'Gender Prediction';
+      targetGender = v.gender;
+    } else {
+      targetName = v.nameName;
+      targetGender = v.nameGender;
+    }
 
-    return `<tr style="${isUnvote?'opacity:0.6':''}">
+    const dimRow = isUnvote || isCleared;
+    return `<tr style="${dimRow?'opacity:0.55':''}">
       <td>${actionBadge}</td>
       <td><div class="voter-name-cell">
         <div class="voter-display-name ${hasName?'':'anon'}">${hasName?v.voterName:'Anonymous'}</div>
@@ -872,6 +891,9 @@ function renderVoteLog(){
       <td style="font-weight:600">${targetName}</td>
       <td><span class="gender-tag ${targetGender}">${targetGender==='girl'?'🎀 Girl':'🧢 Boy'}</span></td>
       <td><span class="timestamp">${timeStr}</span></td>
+      <td style="text-align:right">
+        <button class="btn btn-ghost btn-sm" onclick="rollbackTo('${v._id}','${timeStr}')" title="Roll back to this point">↺</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -910,6 +932,27 @@ function confirmReset(){
   });
 }
 function exportCsv(){window.open(`/api/admin/${SECRET}/export`,'_blank');}
+
+async function rollbackTo(eventId, timeStr) {
+  showModal(
+    'Rollback to this point?',
+    `This will PERMANENTLY DELETE all events and names that occurred after ${timeStr}. The database state will be reverted.`,
+    async () => {
+      const res = await fetch(`/api/admin/${SECRET}/rollback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId })
+      });
+      if (res.ok) {
+        showToast('✓ Database rolled back successfully');
+        loadAll();
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Rollback failed', 'error');
+      }
+    }
+  );
+}
 
 // ── SSE ───────────────────────────────────────────────────────────────────────
 function connectSSE(){

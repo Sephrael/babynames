@@ -234,6 +234,51 @@ app.get('/api/votes/:deviceId', async (req, res) => {
   res.json(votes.map(v => v.nameId));
 });
 
+// ─── Public: look up who is currently registered on a device ─────────────────
+// Returns the most-recently-seen voterName for this deviceId (any action).
+app.get('/api/device-user/:deviceId', async (req, res) => {
+  const latest = await votesDb.find({ deviceId: req.params.deviceId }).sort({ votedAt: -1 });
+  const record = latest[0];
+  res.json({ voterName: record ? (record.voterName || null) : null });
+});
+
+// ─── Public: clear all votes for a device+user (user switch) ─────────────────
+// Removes all active vote/gender_vote records for the old user on this device,
+// decrements name vote counts, and logs a user_switch audit event.
+app.post('/api/clear-device-votes', async (req, res) => {
+  const { deviceId, oldVoterName, newVoterName } = req.body;
+  if (!deviceId || !oldVoterName) return res.status(400).json({ error: 'deviceId and oldVoterName required' });
+
+  // Find all active name votes for this device+user
+  const activeVotes = await votesDb.find({ deviceId, voterName: oldVoterName, action: 'vote' });
+
+  // Decrement each name's vote count and mark vote as cleared
+  for (const v of activeVotes) {
+    await votesDb.update({ _id: v._id }, { $set: { action: 'vote_cleared_switch', removedAt: new Date() } });
+    await namesDb.update({ _id: v.nameId }, { $inc: { votes: -1 } });
+  }
+
+  // Clear active gender vote
+  const activeGender = await votesDb.find({ deviceId, voterName: oldVoterName, action: 'gender_vote' });
+  for (const g of activeGender) {
+    await votesDb.update({ _id: g._id }, { $set: { action: 'gender_vote_cleared_switch', removedAt: new Date() } });
+  }
+
+  // Log the user switch as an audit event
+  await votesDb.insert({
+    action: 'user_switch',
+    deviceId,
+    voterName: oldVoterName,
+    newVoterName: newVoterName || null,
+    clearedVotes: activeVotes.length,
+    clearedGenderVotes: activeGender.length,
+    votedAt: new Date()
+  });
+
+  broadcast('update', { ts: Date.now() });
+  res.json({ success: true, clearedVotes: activeVotes.length, clearedGenderVotes: activeGender.length });
+});
+
 // ─── Public: gender prediction ──────────────────────────────────────────────
 app.post('/api/gender-vote', async (req, res) => {
   const { gender, deviceId, voterName } = req.body;
@@ -364,21 +409,80 @@ app.post(`/api/admin/${ADMIN_SECRET}/reset`, async (req, res) => {
   res.json({ success: true });
 });
 
+app.post(`/api/admin/${ADMIN_SECRET}/rollback`, async (req, res) => {
+  try {
+    const { eventId } = req.body;
+    if (!eventId) return res.status(400).json({ error: 'eventId required' });
+
+    const targetEvent = await votesDb.findOne({ _id: eventId });
+    if (!targetEvent) return res.status(404).json({ error: 'Target event not found' });
+
+    const targetTime = new Date(targetEvent.votedAt);
+
+    // 1. Revert mutated records (unvotes, cleared votes) that happened AFTER target time
+    // Find records that were marked as removed after the target time
+    const removedAfter = await votesDb.find({ removedAt: { $gt: targetTime } });
+    for (const v of removedAfter) {
+      let originalAction = v.action;
+      if (v.action === 'unvote' || v.action === 'vote_cleared_switch') originalAction = 'vote';
+      if (v.action === 'gender_unvote' || v.action === 'gender_vote_cleared_switch') originalAction = 'gender_vote';
+      
+      await votesDb.update({ _id: v._id }, { 
+        $set: { action: originalAction },
+        $unset: { removedAt: 1 }
+      });
+    }
+
+    // 2. Remove all future events (events that WERE the unvotes/switches/nominations)
+    await votesDb.remove({ votedAt: { $gt: targetTime } }, { multi: true });
+
+    // 3. Remove all names nominated after target time
+    await namesDb.remove({ createdAt: { $gt: targetTime } }, { multi: true });
+
+    // 4. Recalculate vote counts for all remaining names
+    await namesDb.update({}, { $set: { votes: 0 } }, { multi: true });
+    const allRemainingVotes = await votesDb.find({
+      action: { $in: ['vote', 'unvote', 'vote_cleared_switch'] }
+    });
+
+    for (const v of allRemainingVotes) {
+      const inc = (v.action === 'vote') ? 1 : -1;
+      await namesDb.update({ _id: v.nameId }, { $inc: { votes: inc } });
+    }
+
+    broadcast('update', { ts: Date.now() });
+    res.json({ success: true, rolledBackTo: targetTime });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get(`/api/admin/${ADMIN_SECRET}/export`, async (req, res) => {
   const names = await namesDb.find({}).sort({ createdAt: 1 });
   const votes = await votesDb.find({}).sort({ votedAt: 1 });
   // Build a lookup of name ID → submitter
   const nameMap = {};
   names.forEach(n => { nameMap[n._id] = n; });
-  let csv = 'Action,Voter Name,Baby Name,Gender,Nominated By,Device ID,Time\n';
+  let csv = 'Action,Voter Name,Detail,Gender,Extra Info,Device ID,Time\n';
   votes.forEach(v => {
-    const isGenderVote = v.action === 'gender_vote' || v.action === 'gender_unvote';
-    const nom = nameMap[v.nameId];
-    const nominatedBy = nom && nom.submittedBy ? nom.submittedBy : '';
-    const targetName = isGenderVote ? 'Gender Prediction' : (v.nameName || '');
-    const targetGender = isGenderVote ? v.gender : (v.nameGender || '');
-    
-    csv += `"${v.action||'vote'}","${v.voterName||'Anonymous'}","${targetName}","${targetGender}","${nominatedBy}","${v.deviceId}","${new Date(v.votedAt).toISOString()}"\n`;
+    let targetName = '', targetGender = '', extraInfo = '', voterDisplay = v.voterName || 'Anonymous';
+    if (v.action === 'user_switch') {
+      targetName = `Switched to: ${v.newVoterName || '(unknown)'}`;
+      extraInfo = `Cleared ${v.clearedVotes || 0} votes, ${v.clearedGenderVotes || 0} gender votes`;
+    } else if (v.action === 'vote_cleared_switch' || v.action === 'gender_vote_cleared_switch') {
+      targetName = v.nameName || (v.action === 'gender_vote_cleared_switch' ? 'Gender Prediction' : '');
+      targetGender = v.nameGender || v.gender || '';
+      extraInfo = 'Cleared on user switch';
+    } else if (v.action === 'gender_vote' || v.action === 'gender_unvote') {
+      targetName = 'Gender Prediction';
+      targetGender = v.gender || '';
+    } else {
+      targetName = v.nameName || '';
+      targetGender = v.nameGender || '';
+      const nom = nameMap[v.nameId];
+      extraInfo = nom && nom.submittedBy ? nom.submittedBy : '';
+    }
+    csv += `"${v.action||'vote'}","${voterDisplay}","${targetName}","${targetGender}","${extraInfo}","${v.deviceId||''}","${new Date(v.votedAt).toISOString()}"\n`;
   });
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="baby-name-votes.csv"');
