@@ -60,7 +60,7 @@
 
   /* Push text away from QR on both sides to keep title visually centered */
   @media(min-width:560px){
-    .header-band{padding-left:clamp(90px,11vw,140px);padding-right:clamp(90px,11vw,140px);}
+    .header-band{padding-left:clamp(120px,16vw,260px);padding-right:clamp(120px,16vw,260px);}
   }
 
   .header-title{
@@ -82,36 +82,43 @@
   /* QR — absolutely positioned, vertically centered in header */
   .header-qr{
     position:absolute;
-    right:clamp(0.6rem,1.5vw,1.5rem);
+    right:clamp(0.6rem,2vw,2rem);
     top:50%;transform:translateY(-50%);
-    display:flex;flex-direction:column;align-items:center;gap:0.35rem;
+    display:flex;flex-direction:row;align-items:center;gap:0.75rem;
+    height:calc(100% - 2.2rem);
+    max-height:140px;
     text-decoration:none;
   }
   .qr-image{
-    width:clamp(68px,9vw,110px);height:clamp(68px,9vw,110px);
-    border-radius:10px;background:var(--theme-card-bg);padding:5px;
+    height:100%;width:auto;aspect-ratio:1/1;
+    border-radius:12px;background:var(--theme-card-bg);padding:7px;
     border:1.5px solid var(--theme-border);
     box-shadow:0 3px 16px rgba(0,0,0,0.07);
     display:block;transition:transform 0.2s,box-shadow 0.2s;
   }
   .qr-text {
-    font-size: clamp(0.48rem, 0.8vw, 0.65rem);
-    font-weight: 800;
+    font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--text-dark);
-    opacity: 0.5;
+    opacity: 0.55;
     transition: opacity 0.2s, color 0.2s;
-    white-space: nowrap;
+    text-align: center;
+    line-height: 1.25;
+    font-family: 'Playfair Display', serif;
   }
-  .header-qr:hover .qr-image{transform:scale(1.06);box-shadow:0 6px 24px rgba(0,0,0,0.1);}
+  .qr-line { display: block; }
+  .header-qr:hover .qr-image{transform:scale(1.04);box-shadow:0 6px 24px rgba(0,0,0,0.1);}
   .header-qr:hover .qr-text{opacity:1;color:var(--gold);}
 
   /* On small screens: show QR but smaller, keep symmetric padding so title stays centered */
   @media(max-width:559px){
-    .header-qr{right:0.5rem;}
-    .qr-image{width:52px;height:52px;padding:3px;border-radius:8px;}
-    .header-band{padding-left:60px;padding-right:60px;}
+    .header-qr{right:0.5rem;flex-direction:column;gap:0.2rem;height:auto;max-height:none;}
+    .qr-image{height:56px;width:56px;padding:4px;border-radius:8px;}
+    .qr-text{text-align:center;font-size:0.7rem;}
+    .qr-line{display:inline;}
+    .header-band{padding-left:70px;padding-right:70px;}
   }
 
   /* ── GENDER POLL ── */
@@ -243,8 +250,8 @@
 
     <!-- QR: absolute right, vertically centered, hidden below 560px -->
     <a class="header-qr" id="qr-link" href="/vote" target="_blank" title="Tap to vote">
+      <span class="qr-text"><span class="qr-line">Click</span><span class="qr-line">to</span><span class="qr-line">Play!</span></span>
       <img class="qr-image" id="qr-img" src="" alt="Scan to vote" />
-      <span class="qr-text">Click to Play!</span>
     </a>
   </header>
 
